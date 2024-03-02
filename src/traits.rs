@@ -2,7 +2,7 @@ use std::vec::Vec;
 use std::iter;
 use std::borrow::Borrow;
 
-use rust_elgamal::{Scalar};
+use rust_elgamal::{Scalar, Ciphertext};
 use curve25519_dalek::ristretto::RistrettoPoint;
 use curve25519_dalek::traits::MultiscalarMul;
 
@@ -17,6 +17,46 @@ pub trait Hadamard {
         I::Item: Borrow<Self::Msg>;
 
 }
+
+pub trait EGMult<I> {
+    type Output;
+    fn pow(&self, exp: I) -> Self::Output;
+}
+
+impl EGMult<Scalar> for Ciphertext {
+    type Output = Ciphertext;
+
+    fn pow(&self, exp: Scalar) -> Ciphertext {
+        self * exp
+    }
+}
+
+impl EGMult<&[Scalar]> for &[Ciphertext] {
+    type Output = Ciphertext;
+
+    fn pow(&self, exp: &[Scalar]) -> Ciphertext {
+        assert!(self.len() == exp.len(), "arguments missized");
+        self.iter()
+            .zip(exp)
+            .map(|(c, a)| c * a)
+            .collect::<Vec<Ciphertext>>()
+            .into_iter()
+            .reduce(|s1, s2| s1 + s2)
+            .unwrap()
+    }
+}
+
+impl EGMult<&[Vec<Scalar>]> for &[Ciphertext] {
+    type Output = Vec<Ciphertext>;
+
+    fn pow(&self, exp: &[Vec<Scalar>]) -> Vec<Ciphertext> {
+        assert!(self.len() == exp.len());
+        exp.iter().map(|a| self.pow(&a[..])).collect()
+    }
+}
+
+
+
 
 
 #[test]

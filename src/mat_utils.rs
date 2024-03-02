@@ -1,8 +1,8 @@
 use rust_elgamal::{Scalar};
 use crate::vec_utils::VecUtil;
 
-pub struct MatUtil;
-impl MatUtil {
+pub mod MatUtil {
+    use super::*;
     pub fn print_scalar_mat(m: &Vec<Vec<Scalar>>) -> String {
         let mut result: String = String::from("[");
         for v in m {

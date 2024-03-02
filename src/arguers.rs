@@ -15,6 +15,9 @@ use curve25519_dalek::ristretto::RistrettoPoint;
 use curve25519_dalek::traits::MultiscalarMul;
 use bulletproofs::PedersenGens;
 
+use crate::traits::Hadamard;
+use crate::enums::EGInp;
+
 #[derive(Clone)]
 pub struct CommonRef {
     pub pk : EncryptionKey,
@@ -63,10 +66,23 @@ impl CommonRef {
 
     pub fn encrypt(
         &mut self,
-        m: &RistrettoPoint,
+        m: &EGInp,
         r: &Scalar,
     ) -> Ciphertext {
-        self.pk.encrypt_with(*m, r.clone())
+        match m {
+            EGInp::Rist(x) => self.pk.encrypt_with(x.clone(), r.clone()),
+            EGInp::Scal(x) => self.pk.exp_encrypt_with(x.clone(), r.clone()),
+        }
+    }
+
+    pub fn encrypt_vec(
+        &mut self,
+        M: &[Scalar],
+        R: &[Scalar],
+    ) -> Ciphertext {
+        let m_prod = M.iter().copied().reduce(|s1, s2| (s1 * s2)).unwrap();
+        let r_prod = R.iter().copied().reduce(|s1, s2| (s1 * s2)).unwrap();
+        self.pk.exp_encrypt_with(m_prod, r_prod) 
     }
 
     pub fn decrypt(
@@ -92,7 +108,7 @@ fn test_common() {
 
 
     let message: RistrettoPoint =  &Scalar::from(5u32) * &GENERATOR_TABLE;
-    let encrypted = cr.encrypt(&message, &Scalar::random(&mut rng));
+    let encrypted = cr.encrypt(&EGInp::Rist(message), &Scalar::random(&mut rng));
     let decrypted = cr.decrypt(encrypted);
     assert_eq!(message, decrypted);
     println!("done");

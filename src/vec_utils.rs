@@ -1,8 +1,8 @@
 use ethnum::I256;
 use rust_elgamal::{Scalar};
 
-pub struct VecUtil;
-impl VecUtil {
+pub mod VecUtil {
+    use super::*;
     pub fn scalar_to_str(v: &Vec<Scalar>) -> String {
         let mut result: String = String::from("[");
         for scalar in v {

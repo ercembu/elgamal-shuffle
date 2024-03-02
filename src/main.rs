@@ -11,6 +11,7 @@ mod traits;
 mod vec_traits;
 mod vec_utils;
 mod mat_utils;
+mod enums;
 
 
 fn main() {
