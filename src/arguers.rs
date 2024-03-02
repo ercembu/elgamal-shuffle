@@ -7,6 +7,7 @@ use rust_elgamal::{EncryptionKey,
 
 use rand::rngs::StdRng;
 use rand::SeedableRng;
+use rand::prelude::SliceRandom;
 
 use std::vec::Vec;
 use std::iter;
@@ -90,6 +91,21 @@ impl CommonRef {
         ctext: Ciphertext
     ) -> RistrettoPoint {
         self.dk.decrypt(ctext)
+    }
+
+    pub fn rand_scalar(
+        &mut self
+    ) -> Scalar {
+        Scalar::random(&mut self.rng)
+    }
+
+    pub fn rand_perm(
+        &mut self,
+        range: &Vec<usize>,
+    ) -> Vec<usize> {
+        let mut res: Vec<usize> = (*range.clone()).to_vec();
+        res.shuffle(&mut self.rng);
+        res
     }
 }
 
