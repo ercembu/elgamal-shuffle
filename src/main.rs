@@ -29,7 +29,7 @@ fn main() {
     ///Setup rng and common reference key(public key for ElGamal,
     /// commitment key for Pedersen)
     let mut rng = StdRng::from_entropy();
-    let mut cr = arguers::CommonRef::new(n, rng);
+    let mut cr = arguers::CommonRef::new(N, rng);
 
     let deck: Vec<Scalar> = (0..N).map(|card| Scalar::from(card as u64))
                                     .collect();
