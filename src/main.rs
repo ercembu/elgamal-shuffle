@@ -1,10 +1,9 @@
 #![allow(non_snake_case)]
-use rust_elgamal::{DecryptionKey, Scalar, GENERATOR_TABLE, Ciphertext};
+use rust_elgamal::{Scalar, Ciphertext};
 use rand::rngs::StdRng;
 use rand::SeedableRng;
 
-use curve25519_dalek::ristretto::RistrettoPoint;
-use bulletproofs::PedersenGens;
+use merlin::Transcript;
 
 use crate::enums::EGInp;
 
@@ -14,6 +13,8 @@ mod vec_traits;
 mod vec_utils;
 mod mat_utils;
 mod enums;
+mod prover;
+mod transcript;
 
 
 fn main() {
@@ -25,6 +26,8 @@ fn main() {
 
     assert!(m % mu == 0);
 
+    ///Setup rng and common reference key(public key for ElGamal,
+    /// commitment key for Pedersen)
     let mut rng = StdRng::from_entropy();
     let mut cr = arguers::CommonRef::new(n, rng);
 
@@ -49,13 +52,22 @@ fn main() {
     let C_permd: Vec<Ciphertext> = permutation.iter()
                                                 .map(|pi| C_deck[*pi].clone())
                                                 .collect();
-    println!("{:?}", permutation);
-    println!("{:?}", C_deck);
-    println!("{:?}", C_permd);
     let C_: Vec<Ciphertext> = rho.iter()
                                     .map(|r| cr.encrypt(&EGInp::Scal(Scalar::from(1 as u128)), r))
                                     .collect();
 
+    let mut prover_transcript = Transcript::new(b"ShuffleProof");
+    let mut shuffle_prover = prover::ShuffleProver::new(
+                            m,
+                            n,
+                            C_deck,
+                            C_,
+                            permutation,
+                            rho,
+                            cr
+                        );
+                                
+    shuffle_prover.prove(&mut prover_transcript);
 
     //let q: RistrettoPoint = cr.
 }

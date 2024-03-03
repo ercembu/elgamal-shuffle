@@ -23,6 +23,17 @@ pub trait EGMult<I> {
     fn pow(&self, exp: I) -> Self::Output;
 }
 
+impl EGMult<usize> for Scalar {
+    type Output = Scalar;
+    fn pow(&self, exp: usize) -> Scalar {
+        let mut result = Scalar::one();
+        for _ in 0..exp {
+            result *= self;
+        }
+        result
+    }
+}
+
 impl EGMult<Scalar> for Ciphertext {
     type Output = Ciphertext;
 

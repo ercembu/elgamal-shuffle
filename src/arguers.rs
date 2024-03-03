@@ -6,7 +6,6 @@ use rust_elgamal::{EncryptionKey,
                     Ciphertext};
 
 use rand::rngs::StdRng;
-use rand::SeedableRng;
 use rand::prelude::SliceRandom;
 
 use std::vec::Vec;
@@ -36,6 +35,15 @@ impl CommonRef {
         Self{pk: *pk, ck: pd_gen, dk: dk, rng: rng}
     }
 
+    pub fn commit_vec(
+        &mut self,
+        a: Vec<Scalar>,
+        r: Vec<Scalar>,
+    ) -> Vec<RistrettoPoint> {
+        r.iter()
+            .map(|rand| self.commit(a.clone(), *rand))
+            .collect()
+    }
     pub fn commit(
         &mut self,
         a: Vec<Scalar>,
