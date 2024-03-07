@@ -62,6 +62,34 @@ impl EGMult<&[Scalar]> for &[Ciphertext] {
             .unwrap()
     }
 }
+impl EGMult<&[Scalar]> for &[&Ciphertext] {
+    type Output = Ciphertext;
+
+    fn pow(&self, exp: &[Scalar]) -> Ciphertext {
+        assert!(self.len() == exp.len(), "arguments missized");
+        self.iter()
+            .zip(exp)
+            .map(|(c, a)| *c * a)
+            .collect::<Vec<Ciphertext>>()
+            .into_iter()
+            .reduce(|s1, s2| s1 + s2)
+            .unwrap()
+    }
+}
+impl EGMult<&[&Scalar]> for &[&Ciphertext] {
+    type Output = Ciphertext;
+
+    fn pow(&self, exp: &[&Scalar]) -> Ciphertext {
+        assert!(self.len() == exp.len(), "arguments missized");
+        self.iter()
+            .zip(exp)
+            .map(|(c, a)| *c * *a)
+            .collect::<Vec<Ciphertext>>()
+            .into_iter()
+            .reduce(|s1, s2| s1 + s2)
+            .unwrap()
+    }
+}
 
 impl EGMult<&[Vec<Scalar>]> for &[Ciphertext] {
     type Output = Vec<Ciphertext>;

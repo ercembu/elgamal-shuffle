@@ -100,7 +100,7 @@ impl ShuffleProver {
         let b_mat: Vec<Vec<&Scalar>> =  (0..self.m).map(|_| (0..self.n).map(|_| b_iter.next().unwrap())
                                                            .collect::<Vec<&Scalar>>()
                                                             ).collect();
-        let mut mexp_prover = MexpProver::new(C_mat, C_x, &c_b, b_mat, &s, rho_, &self.com_ref);
+        let mut mexp_prover = MexpProver::new(C_mat, C_x, &c_b, b_mat, &s, rho_, &mut self.com_ref);
         mexp_prover.prove(trans);
 
         //Challenge y, z
@@ -131,7 +131,6 @@ impl ShuffleProver {
         let d_z: Vec<Vec<&Scalar>> = vec![];//d − z
         let product: Scalar = Scalar::zero(); //(yi + xi − z)
         let prod_prover = ProdProver::new(&cd_cz, d_z, &t, product, &self.com_ref);
-        //self.prod_prove(trans, d, t, z, c_d, c_z);
 
 
 
