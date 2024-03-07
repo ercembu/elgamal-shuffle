@@ -1,8 +1,8 @@
 #![allow(non_snake_case)]
+#![allow(dead_code)]
 use rust_elgamal::{EncryptionKey, 
                     DecryptionKey, 
                     Scalar, 
-                    GENERATOR_TABLE, 
                     Ciphertext};
 
 use rand::rngs::StdRng;
@@ -13,9 +13,7 @@ use std::iter;
 
 use curve25519_dalek::ristretto::RistrettoPoint;
 use curve25519_dalek::traits::MultiscalarMul;
-use bulletproofs::PedersenGens;
 
-use crate::traits::Hadamard;
 use crate::enums::EGInp;
 
 #[derive(Clone)]
@@ -27,11 +25,11 @@ pub struct CommonRef {
 }
 
 impl CommonRef {
-    pub fn new(n: usize, mut rng: StdRng) -> Self {
+    pub fn new(n: u64, mut rng: StdRng) -> Self {
         let dk = DecryptionKey::new(&mut rng);
         let pk = dk.encryption_key();
 
-        let pd_gen: Vec<RistrettoPoint> = vec![RistrettoPoint::random(&mut rng); n+1];
+        let pd_gen: Vec<RistrettoPoint> = vec![RistrettoPoint::random(&mut rng); (n as usize) + 1];
         Self{pk: *pk, ck: pd_gen, dk: dk, rng: rng}
     }
 
@@ -109,9 +107,9 @@ impl CommonRef {
 
     pub fn rand_perm(
         &mut self,
-        range: &Vec<usize>,
-    ) -> Vec<usize> {
-        let mut res: Vec<usize> = (*range.clone()).to_vec();
+        range: &Vec<u64>,
+    ) -> Vec<u64> {
+        let mut res: Vec<u64> = (*range.clone()).to_vec();
         res.shuffle(&mut self.rng);
         res
     }

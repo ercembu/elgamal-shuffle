@@ -1,11 +1,9 @@
 use std::vec::Vec;
-use std::iter;
 use std::borrow::Borrow;
-use std::fmt;
 
 use rust_elgamal::{Scalar};
 
-use crate::traits::Hadamard;
+use crate::traits::{Hadamard, InnerProduct};
 
 impl Hadamard for Vec<Scalar> {
     type Msg = Scalar;
@@ -19,3 +17,16 @@ impl Hadamard for Vec<Scalar> {
     }
 }
 
+impl InnerProduct<Vec<Scalar>> for Vec<Scalar> {
+    type Output = Scalar;
+
+    fn dot(&self, rhs: &Vec<Scalar>) -> Scalar 
+    {
+        assert!(self.len() == rhs.len());
+
+        
+        self.iter()
+            .zip(rhs.iter())
+            .fold(Scalar::zero(), |acc, (l, r)| acc + (l * r))
+    }
+}

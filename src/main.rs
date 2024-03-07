@@ -15,19 +15,22 @@ mod mat_utils;
 mod enums;
 mod prover;
 mod transcript;
+mod mat_traits;
+mod mexp_prover;
+mod prod_prover;
 
 
 fn main() {
-    let m = 4;
-    let n = 4;
-    let mu = 2;
+    let m: u64 = 4;
+    let n: u64 = 4;
+    let mu: u64 = 2;
 
     let N = m * n;
 
     assert!(m % mu == 0);
 
-    ///Setup rng and common reference key(public key for ElGamal,
-    /// commitment key for Pedersen)
+    //Setup rng and common reference key(public key for ElGamal,
+    // commitment key for Pedersen)
     let mut rng = StdRng::from_entropy();
     let mut cr = arguers::CommonRef::new(N, rng);
 
@@ -42,7 +45,7 @@ fn main() {
                                                 )
                                             .collect();
 
-    let permutation: Vec<usize> = cr.rand_perm(&(0..N).collect());
+    let permutation: Vec<u64> = cr.rand_perm(&(0..N).collect());
 
     let rho: Vec<Scalar> = permutation.iter()
                                             .map(|_| cr.rand_scalar())
@@ -50,7 +53,7 @@ fn main() {
 
 
     let C_permd: Vec<Ciphertext> = permutation.iter()
-                                                .map(|pi| C_deck[*pi].clone())
+                                                .map(|pi| C_deck[*pi as usize].clone())
                                                 .collect();
     let C_: Vec<Ciphertext> = rho.iter()
                                     .map(|r| cr.encrypt(&EGInp::Scal(Scalar::from(1 as u128)), r))
@@ -60,6 +63,7 @@ fn main() {
     let mut shuffle_prover = prover::ShuffleProver::new(
                             m,
                             n,
+                            mu,
                             C_deck,
                             C_,
                             permutation,

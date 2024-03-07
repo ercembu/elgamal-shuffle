@@ -1,12 +1,7 @@
 use std::vec::Vec;
-use std::iter;
 use std::borrow::Borrow;
 
 use rust_elgamal::{Scalar, Ciphertext};
-use curve25519_dalek::ristretto::RistrettoPoint;
-use curve25519_dalek::traits::MultiscalarMul;
-
-use crate::vec_utils::VecUtil;
 
 pub trait Hadamard {
     type Msg;
@@ -18,14 +13,25 @@ pub trait Hadamard {
 
 }
 
+pub trait InnerProduct<I> {
+    type Output;
+
+    fn dot(&self, rhs: &I) -> Self::Output
+    where 
+        I: IntoIterator,
+        I::Item: Borrow<Self::Output>;
+
+}
+
+
 pub trait EGMult<I> {
     type Output;
     fn pow(&self, exp: I) -> Self::Output;
 }
 
-impl EGMult<usize> for Scalar {
+impl EGMult<u64> for Scalar {
     type Output = Scalar;
-    fn pow(&self, exp: usize) -> Scalar {
+    fn pow(&self, exp: u64) -> Scalar {
         let mut result = Scalar::one();
         for _ in 0..exp {
             result *= self;

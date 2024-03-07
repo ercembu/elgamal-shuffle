@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use ethnum::I256;
 use rust_elgamal::{Scalar};
 

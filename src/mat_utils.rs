@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use rust_elgamal::{Scalar};
 use crate::vec_utils::VecUtil;
 

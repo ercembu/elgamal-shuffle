@@ -30,3 +30,4 @@ serde = { version = "1", default_features = false, features = ["derive"], option
 rand_core = { version = "0.6", default_features = false }
 bulletproofs = {version= "*", default_features=false}
 ethnum = {version="*"}
+len-trait = {version="*"}
