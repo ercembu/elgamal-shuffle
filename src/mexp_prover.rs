@@ -98,24 +98,24 @@ impl<'a> MexpProver<'a> {
 
         let c_Bk: Vec<RistrettoPoint> = self.com_ref.commit_vec(b.clone(), s);
 
-        let Gbk: Vec<Ciphertext> = b.iter()
+        let mut Gbk: Vec<Ciphertext> = b.iter()
                                         .zip(tau.iter())
                                         .map(|(b_, tau_)| {
                                             self.com_ref.encrypt(&EGInp::Rist(RISTRETTO_BASEPOINT_POINT * b_), 
                                                                  tau_)
                                         }).collect();
 
-        let mut E_k: Vec<Ciphertext> = Vec::with_capacity(k);
-        unsafe {E_k.set_len(k);}
-
         for i in 1..m {
             for j in 0..m {
                 let k = m + j - i;
 
-                E_k[k] = Gbk[k] + self.C_mat[i].as_slice().pow(self.A[j].as_slice())
+                Gbk[k] = Gbk[k] + self.C_mat[i].as_slice().pow(self.A[j].as_slice());
             }
         }
-        println!("{:?}", E_k);
+
+        let Ek: Vec<Ciphertext> = Gbk;
+
+        println!("{:?}", Ek);
 
 
     }
