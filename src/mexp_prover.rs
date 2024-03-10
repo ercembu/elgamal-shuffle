@@ -11,7 +11,7 @@ use crate::transcript::TranscriptProtocol;
 
 use crate::enums::EGInp;
 
-use crate::traits::{EGMult, InnerProduct};
+use crate::traits::{EGMult, InnerProduct, Addition, Multiplicat};
 use crate::mat_traits::MatTraits;
 ///Prover struct for Multi-Expo Argument
 pub struct MexpProver<'a> {
@@ -67,6 +67,9 @@ impl<'a> MexpProver<'a> {
 
         //Format to matrix m x n: m * n = N
         let (m, n) = self.C_mat.size();
+
+        trans.mexp_domain_sep(m.clone() as u64, (m/2).try_into().unwrap());
+
         println!("C MATRIX: {:?}", self.C_mat.size());
         println!("A MATRIX: {:?}", self.A.size());
 
@@ -94,7 +97,7 @@ impl<'a> MexpProver<'a> {
 
         let k = 2*m;
 
-        let c_A0: RistrettoPoint = self.com_ref.commit(a_0, r_0);
+        let c_A0: RistrettoPoint = self.com_ref.commit(a_0.clone(), r_0);
 
         let c_Bk: Vec<RistrettoPoint> = self.com_ref.commit_vec(b.clone(), s);
 
@@ -116,7 +119,16 @@ impl<'a> MexpProver<'a> {
         let Ek: Vec<Ciphertext> = Gbk;
 
         println!("{:?}", Ek);
+        //Send: cA0, {cBk}2m−1k=0 , {Ek}2m−1k=0
+        //Challenge: x ← Z∗q.
 
+        let x: Scalar = trans.challenge_scalar(b"x");
+
+        let x_: Vec<Scalar> = (1..=m).map(|exp| x.pow(exp.try_into().unwrap())).collect();
+        println!("{:?}", x_);
+
+        let Ax: Vec<Scalar> = self.A.mult(&x_);
+        let a_: Vec<Scalar> = a_0.add(&Ax);
 
     }
 

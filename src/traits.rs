@@ -23,6 +23,18 @@ pub trait InnerProduct<I> {
 
 }
 
+pub trait Multiplicat {
+    type RHS;
+    type Out;
+
+    fn mult(&self, rhs: &Self::RHS) -> Self::Out;
+
+}
+pub trait Addition {
+    type Output;
+    fn add(&self, rhs: &Self::Output) -> Self::Output;
+}
+
 
 pub trait EGMult<I> {
     type Output;
@@ -39,6 +51,7 @@ impl EGMult<u64> for Scalar {
         result
     }
 }
+
 
 impl EGMult<Scalar> for Ciphertext {
     type Output = Ciphertext;
