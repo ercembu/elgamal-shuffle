@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 use rust_elgamal::{Scalar, Ciphertext};
 
-use curve25519_dalek::ristretto::RistrettoPoint;
+use curve25519_dalek::ristretto::{RistrettoPoint, CompressedRistretto};
 use merlin::Transcript;
 
 use crate::arguers::CommonRef;
@@ -10,9 +10,15 @@ use crate::transcript::TranscriptProtocol;
 use crate::traits::{EGMult, InnerProduct};
 use crate::mat_traits::MatTraits;
 
-use crate::mexp_prover::MexpProver;
+use bulletproofs::ProofError;
+use crate::mexp_prover::{MexpProver, MexpProof};
 use crate::prod_prover::ProdProver;
 
+pub struct ShuffleProof {
+    pub(crate) c_A : Vec<RistrettoPoint>,
+    pub(crate) c_B : Vec<RistrettoPoint>,
+    pub(crate) mexp: MexpProof,
+}
 
 ///Prover struct for Shuffle Argument
 pub struct ShuffleProver {
@@ -58,12 +64,12 @@ impl ShuffleProver {
         }
     }
 
-    pub fn prove(&mut self, trans: &mut Transcript) 
+    pub fn prove(&mut self, trans: &mut Transcript) -> ShuffleProof
     {
         trans.shuffle_domain_sep(self.n, self.m);
         //Prover
         //Commit permutation
-        let r: Vec<Scalar> = self.pi.iter()
+        let r: Vec<Scalar> = (0..self.m)
             .map(|_| self.com_ref.rand_scalar())
             .collect();
         let a: Vec<Scalar> = self.pi.iter()
@@ -72,11 +78,13 @@ impl ShuffleProver {
 
         let c_a: Vec<RistrettoPoint> = self.com_ref.commit_vec(a.clone(), r.clone());
 
+        trans.append_point_vec(b"c_A", &c_a.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>());
+
         //Challenge x
         let x = trans.challenge_scalar(b"x");
 
         //Commit exp permutation
-        let s: Vec<Scalar> = self.pi.iter()
+        let s: Vec<Scalar> = (0..self.m)
             .map(|_| self.com_ref.rand_scalar())
             .collect();
 
@@ -85,6 +93,7 @@ impl ShuffleProver {
             .collect();
 
         let c_b: Vec<RistrettoPoint> = self.com_ref.commit_vec(b.clone(), s.clone());
+        trans.append_point_vec(b"c_B", &c_b.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>());
 
         //Multi-Expo Argument
         let rho_: Scalar = -self.rho.dot(&b);
@@ -101,7 +110,7 @@ impl ShuffleProver {
                                                            .collect::<Vec<&Scalar>>()
                                                             ).collect();
         let mut mexp_prover = MexpProver::new(C_mat, C_x, &c_b, b_mat, &s, rho_, &mut self.com_ref);
-        mexp_prover.prove(trans);
+        let mexp_proof = mexp_prover.prove(trans);
 
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
@@ -134,7 +143,27 @@ impl ShuffleProver {
 
 
 
-        //TODO: RETURN ARGUMENTS
+        ShuffleProof {
+            c_A: c_a,
+            c_B: c_b,
+            mexp: mexp_proof,
+        }
+    }
+
+    pub fn verify(
+        &mut self,
+        trans: &mut Transcript,
+        proof: ShuffleProof,
+    ) -> Result<(), ProofError> {
+        trans.shuffle_domain_sep(self.n, self.m);
+
+        trans.val_append_point_vec(b"c_A", &proof.c_A.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>())?;
+
+        trans.val_append_point_vec(b"c_B", &proof.c_B.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>())?;
+
+        
+
+        Ok(())
     }
 
 

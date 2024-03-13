@@ -18,6 +18,7 @@ mod transcript;
 mod mat_traits;
 mod mexp_prover;
 mod prod_prover;
+mod errors;
 
 
 fn main() {
@@ -71,7 +72,10 @@ fn main() {
                             cr
                         );
                                 
-    shuffle_prover.prove(&mut prover_transcript);
+    let shuffle_proof = shuffle_prover.prove(&mut prover_transcript);
 
-    //let q: RistrettoPoint = cr.
+    let mut verifier_transcript = Transcript::new(b"ShuffleProof");
+
+    assert!(shuffle_prover.verify(&mut verifier_transcript, shuffle_proof).is_ok());
+    
 }

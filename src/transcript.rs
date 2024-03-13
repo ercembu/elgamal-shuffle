@@ -14,10 +14,17 @@ pub trait TranscriptProtocol {
     /// Append a `scalar` with the given `label`.
 
     fn append_scalar(&mut self, label: &'static [u8], scalar: &Scalar);
+    fn append_scalar_vec(&mut self, label: &'static [u8], scalar: &Vec<Scalar>);
 
     /// Append a `point` with the given `label`.
     fn append_point(&mut self, label: &'static [u8], point: &CompressedRistretto);
+    fn append_point_vec(&mut self, label: &'static [u8], points: &Vec<CompressedRistretto>);
 
+    fn val_append_point_vec(
+        &mut self,
+        label: &'static [u8],
+        points: &Vec<CompressedRistretto>,
+    ) -> Result<(), ProofError>;
     /// Check that a point is not the identity, then append it to the
     /// transcript.  Otherwise, return an error.
     fn validate_and_append_point(
@@ -52,9 +59,47 @@ impl TranscriptProtocol for Transcript {
      fn append_scalar(&mut self, label: &'static [u8], scalar: &Scalar) {
         self.append_message(label, scalar.as_bytes());
     }
+     fn append_scalar_vec(&mut self, label: &'static [u8], scalar: &Vec<Scalar>) {
+        let mut res_vec = vec![];
+        let res_bytes = &scalar.iter()
+                                    .fold(res_vec,
+                                          |acc:Vec<u8>, point:&Scalar| 
+                                          [acc.as_slice(), point.as_bytes()].concat()
+                                    );
+
+        println!("{:?}", res_bytes);
+        self.append_message(label, res_bytes);
+    }
 
     fn append_point(&mut self, label: &'static [u8], point: &CompressedRistretto) {
         self.append_message(label, point.as_bytes());
+    }
+
+    fn append_point_vec(&mut self, label: &'static [u8], points: &Vec<CompressedRistretto>) {
+        let mut res_vec = vec![];
+        let res_bytes = &points.iter()
+                                    .fold(res_vec,
+                                          |acc:Vec<u8>, point:&CompressedRistretto| 
+                                          [acc.as_slice(), point.as_bytes()].concat()
+                                    );
+
+        self.append_message(label, res_bytes);
+    }
+    fn val_append_point_vec(
+        &mut self,
+        label: &'static [u8],
+        points: &Vec<CompressedRistretto>,
+    ) -> Result<(), ProofError> {
+        use curve25519_dalek::traits::IsIdentity;
+
+        for point in points.iter() {
+            if point.is_identity() {
+                return Err(ProofError::VerificationError);
+            }
+        }
+
+        self.append_point_vec(label, points);
+        Ok(())
     }
 
     fn validate_and_append_point(

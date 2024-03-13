@@ -10,9 +10,20 @@ use crate::arguers::CommonRef;
 use crate::transcript::TranscriptProtocol;
 
 use crate::enums::EGInp;
+use crate::errors::ProofError;
 
 use crate::traits::{EGMult, InnerProduct, Addition, Multiplicat};
 use crate::mat_traits::MatTraits;
+pub struct MexpProof {
+    pub(crate) c_A0: RistrettoPoint,
+    pub(crate) c_Bk: Vec<RistrettoPoint>,
+    pub(crate) Ek  : Vec<Ciphertext>,
+    pub(crate) a_  : Vec<Scalar>,
+    pub(crate) r   : Scalar,
+    pub(crate) b   : Scalar,
+    pub(crate) s   : Scalar,
+    pub(crate) tau : Scalar,
+}
 ///Prover struct for Multi-Expo Argument
 pub struct MexpProver<'a> {
     
@@ -63,7 +74,7 @@ impl<'a> MexpProver<'a> {
     pub(crate) fn prove(
         &mut self,
         trans: &mut Transcript,
-    ) {
+    ) -> MexpProof {
 
         //Format to matrix m x n: m * n = N
         let (m, n) = self.C_mat.size();
@@ -76,21 +87,21 @@ impl<'a> MexpProver<'a> {
         let a_0: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
         let r_0: Scalar = self.com_ref.rand_scalar();
 
-        let mut b: Vec<Scalar> = vec![];
-        let mut s: Vec<Scalar> = vec![];
-        let mut tau: Vec<Scalar> = vec![];
+        let mut b_: Vec<Scalar> = vec![];
+        let mut s_: Vec<Scalar> = vec![];
+        let mut tau_: Vec<Scalar> = vec![];
 
         for k in 0..=(2*m - 1) {
             match k {
                 m => {
-                    b.push(self.com_ref.rand_scalar());
-                    s.push(self.com_ref.rand_scalar());
-                    tau.push(self.com_ref.rand_scalar());
+                    b_.push(self.com_ref.rand_scalar());
+                    s_.push(self.com_ref.rand_scalar());
+                    tau_.push(self.com_ref.rand_scalar());
                 },
                 _ => {
-                    b.push(Scalar::zero());
-                    s.push(Scalar::zero());
-                    tau.push(self.rho.clone());
+                    b_.push(Scalar::zero());
+                    s_.push(Scalar::zero());
+                    tau_.push(self.rho.clone());
                 }
             }
         }
@@ -99,13 +110,13 @@ impl<'a> MexpProver<'a> {
 
         let c_A0: RistrettoPoint = self.com_ref.commit(a_0.clone(), r_0);
 
-        let c_Bk: Vec<RistrettoPoint> = self.com_ref.commit_vec(b.clone(), s);
+        let c_Bk: Vec<RistrettoPoint> = self.com_ref.commit_vec(b_.clone(), s_.clone());
 
-        let mut Gbk: Vec<Ciphertext> = b.iter()
-                                        .zip(tau.iter())
-                                        .map(|(b_, tau_)| {
-                                            self.com_ref.encrypt(&EGInp::Rist(RISTRETTO_BASEPOINT_POINT * b_), 
-                                                                 tau_)
+        let mut Gbk: Vec<Ciphertext> = b_.iter()
+                                        .zip(tau_.iter())
+                                        .map(|(_b, _tau)| {
+                                            self.com_ref.encrypt(&EGInp::Rist(RISTRETTO_BASEPOINT_POINT * _b), 
+                                                                 _tau)
                                         }).collect();
 
         for i in 1..m {
@@ -130,6 +141,39 @@ impl<'a> MexpProver<'a> {
         let Ax: Vec<Scalar> = self.A.mult(&x_);
         let a_: Vec<Scalar> = a_0.add(&Ax);
 
+        let r: Scalar = r_0 + self.r.clone().dot(&x_);
+
+        let b: Scalar = b_[0] + (1..m*2 -1).map(|k| 
+                                               b_[k] * x.pow(k.try_into().unwrap()))
+                                            .reduce(|acc, bx| acc + bx).unwrap();
+
+        let s: Scalar = s_[0] + (1..m*2 -1).map(|k| 
+                                               s_[k] * x.pow(k.try_into().unwrap()))
+                                            .reduce(|acc, sx| acc + sx).unwrap();
+        let tau: Scalar = tau_[0] + (1..m*2 -1).map(|k| 
+                                               tau_[k] * x.pow(k.try_into().unwrap()))
+                                            .reduce(|acc, taux| acc + taux).unwrap();
+        //Send: a_, r, b, s, tau
+        MexpProof{
+            c_A0: c_A0,
+            c_Bk: c_Bk,
+            Ek  : Ek,
+            a_  : a_,
+            r   : r,
+            b   : b,
+            s   : s,
+            tau : tau,
+        }
+
+
+    }
+
+    pub fn verify(
+        &mut self,
+        proof: MexpProof,
+        trans: &mut Transcript,
+    ) -> Result<(), ProofError> {
+        Ok(())
     }
 
 }
