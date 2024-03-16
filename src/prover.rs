@@ -14,13 +14,16 @@ use bulletproofs::ProofError;
 use crate::mexp_prover::{MexpProver, MexpProof};
 use crate::prod_prover::ProdProver;
 
+#[derive(Clone)]
 pub struct ShuffleProof {
     pub(crate) c_A : Vec<RistrettoPoint>,
     pub(crate) c_B : Vec<RistrettoPoint>,
     pub(crate) mexp: MexpProof,
+    pub(crate) mexp_prover: MexpProver,
 }
 
 ///Prover struct for Shuffle Argument
+#[derive(Clone)]
 pub struct ShuffleProver {
     /// N = m * n, cards
     m: u64,
@@ -64,7 +67,7 @@ impl ShuffleProver {
         }
     }
 
-    pub fn prove(&mut self, trans: &mut Transcript) -> ShuffleProof
+    pub fn prove<'a, 'b: 'a>(&mut self, trans: &mut Transcript) -> ShuffleProof
     {
         trans.shuffle_domain_sep(self.n, self.m);
         //Prover
@@ -100,16 +103,16 @@ impl ShuffleProver {
         let x_: Vec<Scalar> = (1..=self.m*self.n).map(|e| x.pow(e as u64)).collect();
         let C_x: Ciphertext = self.c_deck.as_slice().pow(x_.as_slice());
         assert!(self.cp_deck.len() == (self.m * self.n) as usize);
-        let mut cp_iter = self.cp_deck.iter();
-        let C_mat: Vec<Vec<&Ciphertext>> =  (0..self.m).map(|_| (0..self.n).map(|_| cp_iter.next().unwrap())
-                                                           .collect::<Vec<&Ciphertext>>()
+        let mut cp_iter = self.cp_deck.clone().into_iter();
+        let C_mat: Vec<Vec<Ciphertext>> =  (0..self.m).map(|_| (0..self.n).map(|_| cp_iter.next().unwrap())
+                                                           .collect::<Vec<Ciphertext>>()
                                                             ).collect();
 
-        let mut b_iter = b.iter();
-        let b_mat: Vec<Vec<&Scalar>> =  (0..self.m).map(|_| (0..self.n).map(|_| b_iter.next().unwrap())
-                                                           .collect::<Vec<&Scalar>>()
+        let mut b_iter = b.clone().into_iter();
+        let b_mat: Vec<Vec<Scalar>> =  (0..self.m).map(|_| (0..self.n).map(|_| b_iter.next().unwrap())
+                                                           .collect::<Vec<Scalar>>()
                                                             ).collect();
-        let mut mexp_prover = MexpProver::new(C_mat, C_x, &c_b, b_mat, &s, rho_, &mut self.com_ref);
+        let mut mexp_prover = MexpProver::new(C_mat, C_x, c_b.clone(), b_mat, s.clone(), rho_, self.com_ref.clone());
         let mexp_proof = mexp_prover.prove(trans);
 
         //Challenge y, z
@@ -147,19 +150,24 @@ impl ShuffleProver {
             c_A: c_a,
             c_B: c_b,
             mexp: mexp_proof,
+            mexp_prover: mexp_prover,
         }
     }
 
     pub fn verify(
         &mut self,
         trans: &mut Transcript,
-        proof: ShuffleProof,
+        mut proof: ShuffleProof,
     ) -> Result<(), ProofError> {
         trans.shuffle_domain_sep(self.n, self.m);
 
         trans.val_append_point_vec(b"c_A", &proof.c_A.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>())?;
 
         trans.val_append_point_vec(b"c_B", &proof.c_B.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>())?;
+
+        let mexp_proof = proof.mexp;
+        let mut mexp_prover = proof.mexp_prover;
+        mexp_prover.verify(mexp_proof, trans)?;
 
         
 

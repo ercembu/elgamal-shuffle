@@ -10,10 +10,11 @@ use crate::arguers::CommonRef;
 use crate::transcript::TranscriptProtocol;
 
 use crate::enums::EGInp;
-use crate::errors::ProofError;
+use bulletproofs::ProofError;
 
 use crate::traits::{EGMult, InnerProduct, Addition, Multiplicat};
 use crate::mat_traits::MatTraits;
+#[derive(Clone)]
 pub struct MexpProof {
     pub(crate) c_A0: RistrettoPoint,
     pub(crate) c_Bk: Vec<RistrettoPoint>,
@@ -25,39 +26,40 @@ pub struct MexpProof {
     pub(crate) tau : Scalar,
 }
 ///Prover struct for Multi-Expo Argument
-pub struct MexpProver<'a> {
+#[derive(Clone)]
+pub struct MexpProver {
     
     ///m x n Cipher Matrix for C_m vectors
-    C_mat: Vec<Vec<&'a Ciphertext>>,
+    C_mat: Vec<Vec<Ciphertext>>,
 
     /// Result of the argued Multi-Exp Ciphertext
     C: Ciphertext,
 
     ///commitments to the open permutation
-    c_A: &'a Vec<RistrettoPoint>,
+    c_A: Vec<RistrettoPoint>,
 
     /// Scalar matrix for open permutations
-    A: Vec<Vec<&'a Scalar>>,
+    A: Vec<Vec<Scalar>>,
 
     ///Blinding factor for open permutations
-    r: &'a Vec<Scalar>,
+    r: Vec<Scalar>,
 
     /// ElGamal blinding scalar rho
     rho: Scalar,
 
     /// Common reference key
-    com_ref: &'a mut CommonRef,
+    com_ref: CommonRef,
 }
 
-impl<'a> MexpProver<'a> {
+impl MexpProver {
     pub fn new(
-        C_mat: Vec<Vec<&'a Ciphertext>>,
+        C_mat: Vec<Vec<Ciphertext>>,
         C: Ciphertext,
-        c_A: &'a Vec<RistrettoPoint>,
-        A: Vec<Vec<&'a Scalar>>,
-        r: &'a Vec<Scalar>,
+        c_A: Vec<RistrettoPoint>,
+        A: Vec<Vec<Scalar>>,
+        r: Vec<Scalar>,
         rho: Scalar,
-        com_ref: &'a mut CommonRef,
+        com_ref: CommonRef,
     ) -> Self {
         Self {    
             C_mat: C_mat,
@@ -97,7 +99,7 @@ impl<'a> MexpProver<'a> {
                     b_.push(self.com_ref.rand_scalar());
                     s_.push(self.com_ref.rand_scalar());
                     tau_.push(self.com_ref.rand_scalar());
-                },
+                }
                 _ => {
                     b_.push(Scalar::zero());
                     s_.push(Scalar::zero());
