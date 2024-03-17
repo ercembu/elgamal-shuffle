@@ -67,7 +67,7 @@ impl ShuffleProver {
         }
     }
 
-    pub fn prove<'a, 'b: 'a>(&mut self, trans: &mut Transcript) -> ShuffleProof
+    pub fn prove(&mut self, trans: &mut Transcript) -> ShuffleProof
     {
         trans.shuffle_domain_sep(self.n, self.m);
         //Prover

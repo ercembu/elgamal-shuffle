@@ -94,25 +94,26 @@ impl MexpProver {
         let mut tau_: Vec<Scalar> = vec![];
 
         for k in 0..=(2*m - 1) {
-            match k {
-                m => {
-                    b_.push(self.com_ref.rand_scalar());
-                    s_.push(self.com_ref.rand_scalar());
-                    tau_.push(self.com_ref.rand_scalar());
-                }
-                _ => {
+            match k==m {
+                true => {
                     b_.push(Scalar::zero());
                     s_.push(Scalar::zero());
                     tau_.push(self.rho.clone());
                 }
+                false => {
+                    b_.push(self.com_ref.rand_scalar());
+                    s_.push(self.com_ref.rand_scalar());
+                    tau_.push(self.com_ref.rand_scalar());
+                }
             }
         }
 
-        let k = 2*m;
 
         let c_A0: RistrettoPoint = self.com_ref.commit(a_0.clone(), r_0);
 
+        //TODO: mth multiplication should be com(0, 0) but is not
         let c_Bk: Vec<RistrettoPoint> = self.com_ref.commit_vec(b_.clone(), s_.clone());
+        println!("{:?}", c_Bk[m].compress());
 
         let mut Gbk: Vec<Ciphertext> = b_.iter()
                                         .zip(tau_.iter())
@@ -131,14 +132,16 @@ impl MexpProver {
 
         let Ek: Vec<Ciphertext> = Gbk;
 
-        println!("{:?}", Ek);
         //Send: cA0, {cBk}2m−1k=0 , {Ek}2m−1k=0
+        trans.append_point(b"c_A0", &c_A0.compress());
+        trans.append_point_vec(b"c_Bk", &c_Bk.iter()
+                                        .map(|p| p.compress()).collect());
+        trans.append_cipher_vec(b"Ek", &Ek);
         //Challenge: x ← Z∗q.
 
         let x: Scalar = trans.challenge_scalar(b"x");
 
         let x_: Vec<Scalar> = (1..=m).map(|exp| x.pow(exp.try_into().unwrap())).collect();
-        println!("{:?}", x_);
 
         let Ax: Vec<Scalar> = self.A.mult(&x_);
         let a_: Vec<Scalar> = a_0.add(&Ax);
@@ -156,6 +159,12 @@ impl MexpProver {
                                                tau_[k] * x.pow(k.try_into().unwrap()))
                                             .reduce(|acc, taux| acc + taux).unwrap();
         //Send: a_, r, b, s, tau
+        trans.append_scalar_vec(b"a_", &a_);
+        trans.append_scalar(b"r", &r);
+        trans.append_scalar(b"b", &b);
+        trans.append_scalar(b"s", &s);
+        trans.append_scalar(b"tau", &tau);
+
         MexpProof{
             c_A0: c_A0,
             c_Bk: c_Bk,
@@ -175,6 +184,23 @@ impl MexpProver {
         proof: MexpProof,
         trans: &mut Transcript,
     ) -> Result<(), ProofError> {
+        let (m, n) = self.C_mat.size();
+        trans.mexp_domain_sep(m.clone() as u64, (m/2).try_into().unwrap());
+        trans.validate_and_append_point(b"c_A0", &proof.c_A0.compress())?;
+        trans.val_append_point_vec(b"c_Bk", &proof.c_Bk.iter()
+                                        .map(|p| p.compress()).collect())?;
+        trans.val_append_cipher_vec(b"Ek", &proof.Ek)?;
+
+        println!("{:#?}", proof.c_Bk[m].compress());
+        println!("{:?}", self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()).compress());
+        assert!(proof.c_Bk[m] == self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
+        assert!(proof.Ek[m] == self.C);
+
+        trans.append_scalar_vec(b"a_", &proof.a_);
+        trans.append_scalar(b"r", &proof.r);
+        trans.append_scalar(b"b", &proof.b);
+        trans.append_scalar(b"s", &proof.s);
+        trans.append_scalar(b"tau", &proof.tau);
         Ok(())
     }
 

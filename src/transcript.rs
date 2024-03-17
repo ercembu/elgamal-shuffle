@@ -1,6 +1,8 @@
 use curve25519_dalek::ristretto::CompressedRistretto;
-use curve25519_dalek::scalar::Scalar;
+use rust_elgamal::{Scalar, Ciphertext};
 use merlin::Transcript;
+
+use crate::utils::cipher;
 
 use bulletproofs::ProofError;
 
@@ -20,6 +22,13 @@ pub trait TranscriptProtocol {
     fn append_point(&mut self, label: &'static [u8], point: &CompressedRistretto);
     fn append_point_vec(&mut self, label: &'static [u8], points: &Vec<CompressedRistretto>);
 
+    fn append_ciphertext(&mut self, label: &'static [u8], text: &Ciphertext);
+    fn append_cipher_vec(&mut self, label: &'static [u8], texts: &Vec<Ciphertext>);
+    fn val_append_cipher_vec(
+        &mut self,
+        label: &'static [u8],
+        texts: &Vec<Ciphertext>,
+    ) -> Result<(), ProofError>; 
     fn val_append_point_vec(
         &mut self,
         label: &'static [u8],
@@ -31,6 +40,11 @@ pub trait TranscriptProtocol {
         &mut self,
         label: &'static [u8],
         point: &CompressedRistretto,
+    ) -> Result<(), ProofError>;
+    fn validate_and_append_cipher(
+        &mut self,
+        label: &'static [u8],
+        point: &Ciphertext,
     ) -> Result<(), ProofError>;
 
     /// Compute a `label`ed challenge variable.
@@ -67,7 +81,6 @@ impl TranscriptProtocol for Transcript {
                                           [acc.as_slice(), point.as_bytes()].concat()
                                     );
 
-        println!("{:?}", res_bytes);
         self.append_message(label, res_bytes);
     }
 
@@ -85,6 +98,28 @@ impl TranscriptProtocol for Transcript {
 
         self.append_message(label, res_bytes);
     }
+
+    fn append_ciphertext(
+        &mut self, 
+        label: &'static [u8], 
+        text: &Ciphertext) 
+    {
+        self.append_message(label, &cipher::cipher2bytes(text));
+    }
+
+    fn append_cipher_vec(
+        &mut self,
+        label: &'static [u8],
+        texts: &Vec<Ciphertext>
+    ) {
+        let mut res_vec = vec![];
+        let res_bytes = &texts.iter()
+                                    .fold(res_vec,
+                                          |acc:Vec<u8>, text:&Ciphertext| 
+                                          [acc.as_slice(), &cipher::cipher2bytes(text)].concat()
+                                    );
+    }
+
     fn val_append_point_vec(
         &mut self,
         label: &'static [u8],
@@ -102,6 +137,23 @@ impl TranscriptProtocol for Transcript {
         Ok(())
     }
 
+    fn val_append_cipher_vec(
+        &mut self,
+        label: &'static [u8],
+        texts: &Vec<Ciphertext>,
+    ) -> Result<(), ProofError> {
+        use curve25519_dalek::traits::IsIdentity;
+
+        for text in texts.iter() {
+            if text.inner().0.is_identity() || text.inner().1.is_identity() {
+                return Err(ProofError::VerificationError);
+            }
+        }
+
+        self.append_cipher_vec(label, texts);
+        Ok(())
+    }
+
     fn validate_and_append_point(
         &mut self,
         label: &'static [u8],
@@ -113,6 +165,19 @@ impl TranscriptProtocol for Transcript {
             Err(ProofError::VerificationError)
         } else {
             Ok(self.append_message(label, point.as_bytes()))
+        }
+    }
+    fn validate_and_append_cipher(
+        &mut self,
+        label: &'static [u8],
+        text: &Ciphertext,
+    ) -> Result<(), ProofError> {
+        use curve25519_dalek::traits::IsIdentity;
+
+        if text.inner().0.is_identity() || text.inner().1.is_identity() {
+            Err(ProofError::VerificationError)
+        } else {
+            Ok(self.append_message(label, &cipher::cipher2bytes(text)))
         }
     }
 

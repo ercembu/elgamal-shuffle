@@ -19,6 +19,7 @@ mod mat_traits;
 mod mexp_prover;
 mod prod_prover;
 mod errors;
+mod utils;
 
 
 fn main() {
