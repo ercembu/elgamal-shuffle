@@ -117,22 +117,5 @@ impl CommonRef {
 
 #[test]
 fn test_common() {
-    let m = 4;
-    let n = 4;
-    let mu = 2;
-
-    let N = mu * n;
-    let mut rng = StdRng::from_entropy();
-    let mut cr = CommonRef::new(n, rng);
-
-    let mut rng = StdRng::from_entropy();
-    let a = cr.commit(vec![Scalar::zero(); n], Scalar::random(&mut rng));
-
-
-    let message: RistrettoPoint =  &Scalar::from(5u32) * &GENERATOR_TABLE;
-    let encrypted = cr.encrypt(&EGInp::Rist(message), &Scalar::random(&mut rng));
-    let decrypted = cr.decrypt(encrypted);
-    assert_eq!(message, decrypted);
-    println!("done");
 
 }

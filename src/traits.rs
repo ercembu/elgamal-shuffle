@@ -1,6 +1,8 @@
 use std::vec::Vec;
 use std::borrow::Borrow;
 
+use crate::vec_utils::VecUtil;
+
 use rust_elgamal::{Scalar, Ciphertext};
 
 pub trait Hadamard {

@@ -112,6 +112,8 @@ impl MexpProver {
         let c_A0: RistrettoPoint = self.com_ref.commit(a_0.clone(), r_0);
 
         //TODO: mth multiplication should be com(0, 0) but is not
+        println!("{:?}", b_[m]);
+        println!("{:?}", s_[m]);
         let c_Bk: Vec<RistrettoPoint> = self.com_ref.commit_vec(b_.clone(), s_.clone());
         println!("{:?}", c_Bk[m].compress());
 
