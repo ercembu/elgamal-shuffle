@@ -169,8 +169,6 @@ impl ShuffleProver {
         let mut mexp_prover = proof.mexp_prover;
         mexp_prover.verify(mexp_proof, trans)?;
 
-        
-
         Ok(())
     }
 

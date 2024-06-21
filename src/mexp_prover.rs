@@ -83,9 +83,6 @@ impl MexpProver {
 
         trans.mexp_domain_sep(m.clone() as u64, (m/2).try_into().unwrap());
 
-        println!("C MATRIX: {:?}", self.C_mat.size());
-        println!("A MATRIX: {:?}", self.A.size());
-
         let a_0: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
         let r_0: Scalar = self.com_ref.rand_scalar();
 
@@ -111,11 +108,10 @@ impl MexpProver {
 
         let c_A0: RistrettoPoint = self.com_ref.commit(a_0.clone(), r_0);
 
-        //TODO: mth multiplication should be com(0, 0) but is not
-        println!("{:?}", b_[m]);
-        println!("{:?}", s_[m]);
-        let c_Bk: Vec<RistrettoPoint> = self.com_ref.commit_vec(b_.clone(), s_.clone());
-        println!("{:?}", c_Bk[m].compress());
+        let c_Bk: Vec<RistrettoPoint> = b_.clone().into_iter()
+                                            .zip(s_.clone().into_iter())
+                                            .map(|(b_k, s_k)| self.com_ref.commit(vec![b_k], s_k))
+                                            .collect();
 
         let mut Gbk: Vec<Ciphertext> = b_.iter()
                                         .zip(tau_.iter())
@@ -193,8 +189,6 @@ impl MexpProver {
                                         .map(|p| p.compress()).collect())?;
         trans.val_append_cipher_vec(b"Ek", &proof.Ek)?;
 
-        println!("{:#?}", proof.c_Bk[m].compress());
-        println!("{:?}", self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()).compress());
         assert!(proof.c_Bk[m] == self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
         assert!(proof.Ek[m] == self.C);
 
