@@ -40,7 +40,7 @@ fn main() {
                                     .collect();
     let deck_r: Vec<Scalar> = (0..N).map(|_| cr.rand_scalar()).collect();
     let C_deck: Vec<Ciphertext> = deck.iter()
-                                                .zip(deck_r)
+                                                .zip(deck_r.clone())
                                                 .map(|(card, r)| cr.encrypt(&EGInp::Scal(card.clone()), 
                                                                             &r
                                                                 )
@@ -49,17 +49,10 @@ fn main() {
 
     let permutation: Vec<u64> = cr.rand_perm(&(0..N).collect());
 
-    let rho: Vec<Scalar> = permutation.iter()
-                                            .map(|_| cr.rand_scalar())
-                                            .collect();
-
 
     let C_permd: Vec<Ciphertext> = permutation.iter()
                                                 .map(|pi| C_deck[*pi as usize].clone())
                                                 .collect();
-    let C_: Vec<Ciphertext> = rho.iter()
-                                    .map(|r| cr.encrypt(&EGInp::Scal(Scalar::from(1 as u128)), r))
-                                    .collect();
 
     let mut prover_transcript = Transcript::new(b"ShuffleProof");
     let mut shuffle_prover = prover::ShuffleProver::new(
@@ -67,9 +60,9 @@ fn main() {
                             n,
                             mu,
                             C_deck,
-                            C_,
+                            C_permd,
                             permutation,
-                            rho,
+                            deck_r,
                             cr
                         );
                                 

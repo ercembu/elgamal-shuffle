@@ -101,6 +101,7 @@ impl ShuffleProver {
         //Multi-Expo Argument
         let rho_: Scalar = -self.rho.dot(&b);
         let x_: Vec<Scalar> = (1..=self.m*self.n).map(|e| x.pow(e as u64)).collect();
+        //TODO: check correctness here
         let C_x: Ciphertext = self.c_deck.as_slice().pow(x_.as_slice());
         assert!(self.cp_deck.len() == (self.m * self.n) as usize);
         let mut cp_iter = self.cp_deck.clone().into_iter();
@@ -113,7 +114,7 @@ impl ShuffleProver {
                                                            .collect::<Vec<Scalar>>()
                                                             ).collect();
         let mut mexp_prover = MexpProver::new(C_mat, C_x, c_b.clone(), b_mat, s.clone(), rho_, self.com_ref.clone());
-        let mexp_proof = mexp_prover.prove(trans);
+        let mexp_proof = mexp_prover.prove(trans, x.clone());
 
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");

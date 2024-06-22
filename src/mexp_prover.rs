@@ -76,6 +76,7 @@ impl MexpProver {
     pub(crate) fn prove(
         &mut self,
         trans: &mut Transcript,
+        x: Scalar,
     ) -> MexpProof {
 
         //Format to matrix m x n: m * n = N
@@ -116,7 +117,10 @@ impl MexpProver {
         let mut Gbk: Vec<Ciphertext> = b_.iter()
                                         .zip(tau_.iter())
                                         .map(|(_b, _tau)| {
-                                            self.com_ref.encrypt(&EGInp::Rist(RISTRETTO_BASEPOINT_POINT * _b), 
+                                            self.com_ref.encrypt(&if *_b != Scalar::zero() 
+                                                                    {EGInp::Rist(RISTRETTO_BASEPOINT_POINT * _b)} 
+                                                                  else 
+                                                                    {EGInp::Scal(Scalar::from(1 as u128))},
                                                                  _tau)
                                         }).collect();
 
@@ -137,7 +141,6 @@ impl MexpProver {
         trans.append_cipher_vec(b"Ek", &Ek);
         //Challenge: x ← Z∗q.
 
-        let x: Scalar = trans.challenge_scalar(b"x");
 
         let x_: Vec<Scalar> = (1..=m).map(|exp| x.pow(exp.try_into().unwrap())).collect();
 
@@ -185,11 +188,13 @@ impl MexpProver {
         let (m, n) = self.C_mat.size();
         trans.mexp_domain_sep(m.clone() as u64, (m/2).try_into().unwrap());
         trans.validate_and_append_point(b"c_A0", &proof.c_A0.compress())?;
-        trans.val_append_point_vec(b"c_Bk", &proof.c_Bk.iter()
-                                        .map(|p| p.compress()).collect())?;
+        //TODO:maybe not needed
+        //trans.val_append_point_vec(b"c_Bk", &proof.c_Bk.iter()
+        //                                .map(|p| p.compress()).collect())?;
         trans.val_append_cipher_vec(b"Ek", &proof.Ek)?;
 
         assert!(proof.c_Bk[m] == self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
+        //TODO: problematic, check for encryption correctness
         assert!(proof.Ek[m] == self.C);
 
         trans.append_scalar_vec(b"a_", &proof.a_);
