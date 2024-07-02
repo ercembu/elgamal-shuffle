@@ -9,31 +9,36 @@ use crate::transcript::TranscriptProtocol;
 
 use crate::traits::{EGMult, InnerProduct};
 use crate::mat_traits::MatTraits;
+#[derive(Clone)]
+pub struct ProdProof {
+    pub(crate) c_b: RistrettoPoint,
+}
 ///Prover struct for Product Argument
-pub struct ProdProver<'a> {
+#[derive(Clone)]
+pub struct ProdProver {
     ///commitments to arguments
-    c_A: &'a Vec<RistrettoPoint>,
+    c_A: Vec<RistrettoPoint>,
 
     /// Scalar matrix for arguments
-    A: Vec<Vec<&'a Scalar>>,
+    A: Vec<Vec<Scalar>>,
 
     ///Blinding factor for arguments
-    r: &'a Vec<Scalar>,
+    r: Vec<Scalar>,
 
     /// Result Scalar
     b: Scalar,
 
     /// Common reference key
-    com_ref: &'a CommonRef,
+    com_ref: CommonRef,
 }
 
-impl<'a> ProdProver<'a> {
+impl ProdProver {
     pub fn new(
-        c_A: &'a Vec<RistrettoPoint>,
-        A: Vec<Vec<&'a Scalar>>,
-        r: &'a Vec<Scalar>,
+        c_A: Vec<RistrettoPoint>,
+        A: Vec<Vec<Scalar>>,
+        r: Vec<Scalar>,
         b: Scalar,
-        com_ref: &'a CommonRef,
+        com_ref: CommonRef,
     ) -> Self {
         Self { 
             c_A: c_A,
@@ -43,4 +48,17 @@ impl<'a> ProdProver<'a> {
             com_ref: com_ref
         }
     }
+
+    pub fn prove(
+        &mut self,
+        trans: &mut Transcript,
+        x: Scalar,
+    ) -> ProdProof {
+        let s: Scalar = self.com_ref.rand_scalar();
+        
+        ProdProof {
+            c_b: RistrettoPoint::random(&mut self.com_ref.rng),    
+        }
+    }
+
 }

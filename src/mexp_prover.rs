@@ -117,18 +117,21 @@ impl MexpProver {
         let mut Gbk: Vec<Ciphertext> = b_.iter()
                                         .zip(tau_.iter())
                                         .map(|(_b, _tau)| {
-                                            self.com_ref.encrypt(&if *_b != Scalar::zero() 
-                                                                    {EGInp::Rist(RISTRETTO_BASEPOINT_POINT * _b)} 
-                                                                  else 
-                                                                    {EGInp::Scal(Scalar::from(1 as u128))},
-                                                                 _tau)
+                                            self.com_ref.encrypt(&EGInp::Scal(*_b) 
+                                                                  ,_tau)
                                         }).collect();
+        //println!("{:#?}", Gbk[m]);
+        //println!("{:#?}", self.com_ref.encrypt(&EGInp::Scal(Scalar::zero()),
+        //                    &self.rho.clone()));
+        Gbk[m] = Gbk[m] - Gbk[m];
 
-        for i in 1..m {
-            for j in 0..m {
-                let k = m + j - i;
+        for i in 0..m {
+            for j in 0..=m {
+                let k = m + j - i - 1;
 
-                Gbk[k] = Gbk[k] + self.C_mat[i].as_slice().pow(self.A[j].as_slice());
+                Gbk[k] = Gbk[k] + self.C_mat[i].as_slice().pow(
+                    if j == 0 {a_0.as_slice()} else {self.A[j-1].as_slice()}
+                    );
             }
         }
 

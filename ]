@@ -13,7 +13,7 @@ use crate::vec_utils::VecUtil::scalar_to_str;
 
 use bulletproofs::ProofError;
 use crate::mexp_prover::{MexpProver, MexpProof};
-use crate::prod_prover::{ProdProver, ProdProof};
+use crate::prod_prover::ProdProver;
 
 #[derive(Clone)]
 pub struct ShuffleProof {
@@ -21,8 +21,6 @@ pub struct ShuffleProof {
     pub(crate) c_B : Vec<RistrettoPoint>,
     pub(crate) mexp: MexpProof,
     pub(crate) mexp_prover: MexpProver,
-    pub(crate) prod: ProdProof,
-    pub(crate) prod_prover: ProdProver,
 }
 
 ///Prover struct for Shuffle Argument
@@ -126,7 +124,7 @@ impl ShuffleProver {
 
         let _z: Vec<Scalar> = (0..self.pi.len()).map(|_| -z.clone()).collect();
         let zeros: Vec<Scalar> = (0..self.pi.len()).map(|_| Scalar::from(0 as u128)).collect();
-        let c_z: Vec<RistrettoPoint> = self.com_ref.commit_vec(_z.clone(), zeros);
+        let c_z: Vec<RistrettoPoint> = self.com_ref.commit_vec(_z, zeros);
 
         let c_d: Vec<RistrettoPoint> = c_a.iter()
             .zip(c_b.iter())
@@ -148,13 +146,13 @@ impl ShuffleProver {
             .zip(c_z.iter())
             .map(|(d_, z_)| d_ + z_)
             .collect();//cd * c-z
-        let d_z: Vec<Scalar> = d.iter()
+        let d_z: Vec<&Scalar> = d.iter()
             .zip(_z.iter())
             .map(|(d_, z_)| d_ + z_)
             .collect();
-        let mut d_z_iter = d_z.clone().into_iter();
-        let d_z: Vec<Vec<Scalar>> = (0..self.m).map(|_| 
-                                                (0..self.n).map(|_| d_z_iter.next().unwrap()).collect::<Vec<Scalar>>()
+        let d_z_iter = d_z.clone().into_iter();
+        let d_z: Vec<Vec<&Scalar>> = (0..self.m).map(|_| 
+                                                (0..self.n).map(|_| d_z_iter.next())
                                                 )
             .collect();
         //(yi + xi − z)
@@ -162,14 +160,14 @@ impl ShuffleProver {
         let product: Scalar = (1..=self.m * self.n).fold(
             Scalar::from(1 as u128),
             |acc, i| 
-            acc * (y * Scalar::from(i as u128) + (0..i).fold(
+            acc * (y * i + (0..i).fold(
                     Scalar::from(1 as u128), 
                     |acc, _| 
                     acc * x) 
                 - z)
             );
-        let mut prod_prover = ProdProver::new(cd_cz, d_z, t, product, self.com_ref.clone());
-        let prod_proof = prod_prover.prove(trans, x.clone());
+        let prod_prover = ProdProver::new(&cd_cz, d_z, &t, product, &self.com_ref);
+        let prod_proof = prod_prover.prove(&mut trans, x.clone());
 
 
 
