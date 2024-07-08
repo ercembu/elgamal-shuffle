@@ -87,8 +87,8 @@ impl ShuffleProver {
         trans.append_point_vec(b"c_A", &c_a.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>());
 
         //Challenge x
-        let x = Scalar::from(2 as u128);;
-        //let x = trans.challenge_scalar(b"x");
+        //let x = Scalar::from(2 as u128);;
+        let x = trans.challenge_scalar(b"x");
 
         //Commit exp permutation
         let s: Vec<Scalar> = (0..self.m)

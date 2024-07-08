@@ -9,15 +9,23 @@ use crate::enums::EGInp;
 
 mod arguers;
 mod traits;
-mod vec_traits;
+mod enums;
+
 mod vec_utils;
 mod mat_utils;
-mod enums;
-mod prover;
+
 mod transcript;
+
 mod mat_traits;
+mod vec_traits;
+
+mod prover;
 mod mexp_prover;
 mod prod_prover;
+mod hadamard_prover;
+mod zero_prover;
+mod sv_prover;
+
 mod errors;
 mod utils;
 

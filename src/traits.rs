@@ -22,7 +22,6 @@ pub trait InnerProduct<I> {
     where 
         I: IntoIterator,
         I::Item: Borrow<Self::Output>;
-
 }
 
 pub trait Multiplicat {

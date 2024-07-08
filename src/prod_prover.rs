@@ -6,12 +6,14 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 use crate::transcript::TranscriptProtocol;
+use crate::hadamard_prover::{HadamProof, HadamProver};
 
 use crate::traits::{EGMult, InnerProduct};
 use crate::mat_traits::MatTraits;
 #[derive(Clone)]
 pub struct ProdProof {
     pub(crate) c_b: RistrettoPoint,
+    pub(crate) had_proof: HadamProof,
 }
 ///Prover struct for Product Argument
 #[derive(Clone)]
@@ -55,9 +57,31 @@ impl ProdProver {
         x: Scalar,
     ) -> ProdProof {
         let s: Scalar = self.com_ref.rand_scalar();
+
+        let m = self.A.len();
+        let n = self.A[0].len();
+
+        let a_vec: Vec<Scalar> = (0..m)
+            .map(|i| {
+                (0..n)
+                    .fold(
+                        Scalar::from(1 as u128),
+                        |acc, j|
+                        acc * self.A[j][i]
+                        )
+            })
+        .collect();
+        let c_b: RistrettoPoint = self.com_ref.commit(a_vec.clone(), s);
+
+        //TODO: HADAMARD ARGUMENT
+        let mut hadamard_prover: HadamProver = HadamProver::new(self.c_A.clone(), c_b.clone(), self.A.clone(), s.clone(), self.r.clone(), self.com_ref.clone());
+
+        let hadamard_proof: HadamProof = hadamard_prover.prove(trans);
+        //TODO: SINGLE_VALUE PRODUCT
         
         ProdProof {
-            c_b: RistrettoPoint::random(&mut self.com_ref.rng),    
+            c_b: RistrettoPoint::random(&mut self.com_ref.rng),
+            had_proof: hadamard_proof,
         }
     }
 
