@@ -33,6 +33,8 @@ impl CommonRef {
         Self{pk: *pk, ck: pd_gen, dk: dk, rng: rng}
     }
 
+    //TODO: this definition is completely wrong! 
+    //Correct form: |a| = N; N = m * n; |r| = m;
     pub fn commit_vec(
         &mut self,
         a: Vec<Scalar>,
@@ -69,6 +71,19 @@ impl CommonRef {
         
         
         //self.ck.commit(*msg, Scalar::random(&mut self.rng))
+    }
+    
+    pub fn commit_mat(
+        &mut self,
+        A: Vec<Vec<Scalar>>,
+        r: Vec<Scalar>,
+    ) -> Vec<RistrettoPoint> {
+        assert!(A.len() == r.len());
+        r.into_iter()
+            .zip(A.into_iter())
+            .map( |(rand, a)| self.commit(a, rand))
+            .collect()
+
     }
 
     pub fn encrypt(

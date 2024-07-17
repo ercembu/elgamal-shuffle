@@ -197,6 +197,8 @@ impl ShuffleProver {
         let mexp_proof = proof.mexp;
         let mut mexp_prover = proof.mexp_prover;
         //mexp_prover.verify(mexp_proof, trans)?;
+        //
+        assert!(proof.prod.verify(trans, &mut self.com_ref.clone()).is_ok());
 
         Ok(())
     }

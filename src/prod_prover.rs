@@ -7,6 +7,7 @@ use merlin::Transcript;
 use crate::arguers::CommonRef;
 use crate::transcript::TranscriptProtocol;
 use crate::hadamard_prover::{HadamProof, HadamProver};
+use crate::errors::ProofError;
 
 use crate::traits::{EGMult, InnerProduct};
 use crate::mat_traits::MatTraits;
@@ -85,4 +86,15 @@ impl ProdProver {
         }
     }
 
+}
+
+impl ProdProof {
+    pub fn verify(
+        &mut self,
+        trans: &mut Transcript,
+        com_ref: &mut CommonRef,
+    ) -> Result<(), ProofError> {
+        self.had_proof.verify(trans, com_ref)?;
+        Ok(())
+    }
 }

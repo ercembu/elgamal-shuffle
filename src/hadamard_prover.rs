@@ -8,6 +8,7 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 use crate::transcript::TranscriptProtocol;
+use crate::errors::ProofError;
 
 use crate::traits::{Hadamard, EGMult, InnerProduct, Multiplicat,
                     Addition};
@@ -166,5 +167,16 @@ impl HadamProver {
             c_1: RistrettoPoint::random(&mut self.com_ref.rng),
             zero_proof: zero_proof,
         }
+    }
+}
+
+impl HadamProof {
+    pub fn verify(
+        &mut self,
+        trans: &mut Transcript,
+        com_ref: &mut CommonRef,
+    ) -> Result<(), ProofError> {
+        self.zero_proof.verify(trans, com_ref)?;
+        Ok(())
     }
 }
