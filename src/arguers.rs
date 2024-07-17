@@ -33,15 +33,21 @@ impl CommonRef {
         Self{pk: *pk, ck: pd_gen, dk: dk, rng: rng}
     }
 
-    //TODO: this definition is completely wrong! 
     //Correct form: |a| = N; N = m * n; |r| = m;
     pub fn commit_vec(
         &mut self,
         a: Vec<Scalar>,
         r: Vec<Scalar>,
     ) -> Vec<RistrettoPoint> {
-        r.iter()
-            .map(|rand| self.commit(a.clone(), *rand))
+        assert!(a.len() % r.len() == 0);
+        let n = a.len() / r.len();
+        let mut A_iter = a.into_iter();
+        r.into_iter()
+            .map(|rand| {
+                let a: Vec<Scalar> = (0..n).map(|_| A_iter.next().unwrap())
+                    .collect();
+                self.commit(a, rand)
+            })
             .collect()
     }
     pub fn commit(

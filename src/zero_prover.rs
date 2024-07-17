@@ -182,13 +182,13 @@ fn test_base() {
     let mut prover_transcript = Transcript::new(b"testZeroProof");
 
     let mut rng = StdRng::from_entropy();
-    let n: u64 = 4;
-    let m: u64 = 2;
-    let mut com_ref = CommonRef::new(n, rng);
-    let a: Vec<Vec<Scalar>> = vec![vec![Scalar::zero(); 2]; 4];
-    let r: Vec<Scalar> = vec![Scalar::zero(); 4];
-    let b: Vec<Vec<Scalar>> = vec![vec![Scalar::one(); 2]; 4];
-    let s: Vec<Scalar> = vec![Scalar::zero(); 4];
+    let n: usize = 52;
+    let m: usize = 2;
+    let mut com_ref = CommonRef::new(n as u64, rng);
+    let a: Vec<Vec<Scalar>> = vec![vec![Scalar::zero(), Scalar::one()]; n];
+    let r: Vec<Scalar> = vec![Scalar::one(); n];
+    let b: Vec<Vec<Scalar>> = vec![vec![Scalar::one(), Scalar::zero()]; n];
+    let s: Vec<Scalar> = vec![Scalar::one(); n];
 
 
     let c_A: Vec<RistrettoPoint> = com_ref.commit_mat(a.clone(), r.clone());
@@ -202,10 +202,12 @@ fn test_base() {
         r,
         b,
         s,
-        com_ref
+        com_ref.clone()
         );
 
     let mut zero_proof: ZeroProof = zero_prover.prove(&mut prover_transcript);
+
+    assert!(zero_proof.verify(&mut prover_transcript, &mut com_ref).is_ok());
         
 
 }
