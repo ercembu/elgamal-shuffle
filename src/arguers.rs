@@ -84,10 +84,15 @@ impl CommonRef {
         A: Vec<Vec<Scalar>>,
         r: Vec<Scalar>,
     ) -> Vec<RistrettoPoint> {
-        assert!(A.len() == r.len());
+        assert!(A[0].len() == r.len());
+        let n = A.len();
+        let m = A[0].len();
         r.into_iter()
-            .zip(A.into_iter())
-            .map( |(rand, a)| self.commit(a, rand))
+            .zip(0..m)
+            .map( |(rand, a)| {
+                let col: Vec<Scalar> = (0..n).map(|i| A[i][a]).collect();
+                self.commit(col, rand)
+            })
             .collect()
 
     }

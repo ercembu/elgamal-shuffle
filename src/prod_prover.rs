@@ -15,6 +15,7 @@ use crate::mat_traits::MatTraits;
 pub struct ProdProof {
     pub(crate) c_b: RistrettoPoint,
     pub(crate) had_proof: HadamProof,
+    pub(crate) had_prover: HadamProver,
 }
 ///Prover struct for Product Argument
 #[derive(Clone)]
@@ -75,7 +76,7 @@ impl ProdProver {
         let c_b: RistrettoPoint = self.com_ref.commit(a_vec.clone(), s);
 
         //TODO: HADAMARD ARGUMENT
-        let mut hadamard_prover: HadamProver = HadamProver::new(self.c_A.clone(), c_b.clone(), self.A.clone(), s.clone(), self.r.clone(), self.com_ref.clone());
+        let mut hadamard_prover: HadamProver = HadamProver::new(self.c_A.clone(), c_b.clone(), self.A.clone(), self.r.clone(), a_vec.clone(),  s.clone(), self.com_ref.clone());
 
         let hadamard_proof: HadamProof = hadamard_prover.prove(trans);
         //TODO: SINGLE_VALUE PRODUCT
@@ -83,18 +84,17 @@ impl ProdProver {
         ProdProof {
             c_b: RistrettoPoint::random(&mut self.com_ref.rng),
             had_proof: hadamard_proof,
+            had_prover: hadamard_prover,
         }
     }
 
-}
-
-impl ProdProof {
     pub fn verify(
         &mut self,
         trans: &mut Transcript,
-        com_ref: &mut CommonRef,
+        proof: ProdProof,
     ) -> Result<(), ProofError> {
-        self.had_proof.verify(trans, com_ref)?;
+        let mut had_prover = proof.had_prover;
+        had_prover.verify(trans, proof.had_proof)?;
         Ok(())
     }
 }

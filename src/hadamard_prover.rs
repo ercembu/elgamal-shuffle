@@ -23,6 +23,7 @@ pub struct HadamProof{
     c_D: RistrettoPoint,
     c_1: RistrettoPoint,
     zero_proof: ZeroProof,
+    zero_prover: ZeroProver,
 }
 
 #[derive(Clone)]
@@ -30,8 +31,9 @@ pub struct HadamProver {
     c_A: Vec<RistrettoPoint>,
     c_b: RistrettoPoint,
     A: Vec<Vec<Scalar>>,
-    s: Scalar,
     r: Vec<Scalar>,
+    b: Vec<Scalar>,
+    s: Scalar,
     com_ref: CommonRef,
 }
 
@@ -40,8 +42,9 @@ impl HadamProver {
         c_A: Vec<RistrettoPoint>,
         c_b: RistrettoPoint,
         A: Vec<Vec<Scalar>>,
-        s: Scalar,
         r: Vec<Scalar>,
+        b: Vec<Scalar>,
+        s: Scalar,
         com_ref: CommonRef
     ) -> Self {
         Self {
@@ -49,6 +52,7 @@ impl HadamProver {
             c_b: c_b,
             A: A,
             s: s,
+            b: b,
             r: r,
             com_ref: com_ref,
         }
@@ -77,17 +81,11 @@ impl HadamProver {
         let n = self.A[0].len();
 
 
-        let b: Vec<Scalar> = self.A.iter()
-            .fold(
-                vec![Scalar::from(1 as u128); n],
-                |acc, a_i|
-                acc.hadamard(a_i.clone())
-                );
         let B: Vec<Vec<Scalar>> = (0..m).map(
             |i| {
                 match i {
-                    i if i == m-1 => b.clone(),
-                    _ => (0..i).fold(
+                    i if i == m-1 => self.b.clone(),
+                    _ => (0..i+1).fold(
                             vec![Scalar::from(1 as u128); n],
                             |acc, j|
                             acc.hadamard(self.A[j].clone())
@@ -96,7 +94,7 @@ impl HadamProver {
             }
             ).collect();
 
-        let s_vec: Vec<Scalar> = (1..m-1).map(|_| self.com_ref.rand_scalar())
+        let s_vec: Vec<Scalar> = (0..m-2).map(|_| self.com_ref.rand_scalar())
             .collect();
 
         let s_vec: Vec<Scalar> = iter::once(self.r[0]).chain(s_vec.into_iter())
@@ -114,16 +112,16 @@ impl HadamProver {
         let x = trans.challenge_scalar(b"x");
         let y = trans.challenge_scalar(b"y");
 
-        let x_pow: Vec<Scalar> = (0..c_B.len()).map(|i| x.pow(i as u64)).collect();
+        let x_pow: Vec<Scalar> = (0..c_B.len()).map(|i| x.pow((i+1) as u64)).collect();
         let c_Di: Vec<RistrettoPoint> = (0..c_B.len()).map(
             |i|
             c_B[i] * x_pow[i]
         ).collect();
 
         let c_D: RistrettoPoint = RistrettoPoint::multiscalar_mul(&x_pow[0..m-1],
-                                                                  &c_Di[1..m]);
+                                                                  &c_B[1..m]);
 
-        let c_1: RistrettoPoint = self.com_ref.commit(vec![-Scalar::from(1 as u128); m], 
+        let c_1: RistrettoPoint = self.com_ref.commit(vec![-Scalar::from(1 as u128); m*n], 
                                       Scalar::zero());
 
         let D: Vec<Vec<Scalar>> = (0..m).map(
@@ -152,10 +150,11 @@ impl HadamProver {
             [&self.c_A[1..m], &[c_1].as_slice()].concat(),
             [&c_Di[0..m-1], &[c_D].as_slice()].concat(),
             HadamProver::exp_dot,
+            y.clone(),
             self.A.clone(),
             self.r.clone(),
-            D.clone(),
-            t_.clone(),
+            [D.clone().as_slice(), &[d]].concat(),
+            [t_.clone().as_slice(), &[t]].concat(),
             self.com_ref.clone());
 
         let zero_proof: ZeroProof = zero_prover.prove(trans);
@@ -166,17 +165,57 @@ impl HadamProver {
             c_D: c_D.clone(),
             c_1: RistrettoPoint::random(&mut self.com_ref.rng),
             zero_proof: zero_proof,
+            zero_prover: zero_prover,
         }
     }
-}
-
-impl HadamProof {
     pub fn verify(
         &mut self,
         trans: &mut Transcript,
-        com_ref: &mut CommonRef,
+        proof: HadamProof,
     ) -> Result<(), ProofError> {
-        self.zero_proof.verify(trans, com_ref)?;
+        let mut zero_prover = proof.zero_prover;
+        zero_prover.verify(trans, proof.zero_proof)?;
         Ok(())
     }
+}
+
+#[test]
+fn test_base() {
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
+    let mut prover_transcript = Transcript::new(b"testHadamProof");
+
+    let mut rng = StdRng::from_entropy();
+    let m: usize = 4;
+    let n: usize = 2;
+    let mut com_ref = CommonRef::new((m*n) as u64, rng);
+    let a: Vec<Vec<Scalar>> = vec![vec![Scalar::one(), Scalar::one()]; m];
+    let r: Vec<Scalar> = vec![Scalar::zero(); m];
+    let s: Scalar = Scalar::zero();
+
+    let b: Vec<Scalar> = a.iter()
+        .fold(
+            vec![Scalar::from(1 as u128); n],
+            |acc, a_i|
+            acc.hadamard(a_i.clone())
+            );
+
+    let c_A: Vec<RistrettoPoint> = com_ref.commit_mat(a.clone(), r.clone());
+    let c_B: RistrettoPoint = com_ref.commit(b.clone(), s.clone());
+
+    let mut hadam_prover =  HadamProver::new(
+        c_A,
+        c_B,
+        a,
+        r,
+        b,
+        s,
+        com_ref.clone()
+    );
+
+    let mut hadam_proof = hadam_prover.prove(&mut prover_transcript);
+
+    assert!(hadam_prover.verify(&mut prover_transcript, hadam_proof).is_ok());
+
+
 }

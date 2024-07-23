@@ -1,8 +1,6 @@
 #![allow(non_snake_case)]
 use rust_elgamal::{Scalar, Ciphertext};
 use std::iter;
-use rand::rngs::StdRng;
-use rand::SeedableRng;
 
 use curve25519_dalek::ristretto::RistrettoPoint;
 use curve25519_dalek::traits::MultiscalarMul;
@@ -33,6 +31,7 @@ pub struct ZeroProver {
     c_Ai: Vec<RistrettoPoint>,
     c_Bi: Vec<RistrettoPoint>,
     bi_map: fn(Vec<Scalar>, Vec<Scalar>, Scalar)->Scalar,
+    y: Scalar,
     A: Vec<Vec<Scalar>>,
     r: Vec<Scalar>,
     B: Vec<Vec<Scalar>>,
@@ -45,6 +44,7 @@ impl ZeroProver {
         c_Ai: Vec<RistrettoPoint>,
         c_Bi: Vec<RistrettoPoint>,
         bi_map: fn(Vec<Scalar>, Vec<Scalar>, Scalar)->Scalar,
+        y: Scalar,
         A: Vec<Vec<Scalar>>,
         r: Vec<Scalar>,
         B: Vec<Vec<Scalar>>,
@@ -55,6 +55,7 @@ impl ZeroProver {
             c_Ai: c_Ai,
             c_Bi: c_Bi,
             bi_map: bi_map,
+            y: y,
             A: A,
             r: r,
             B: B,
@@ -69,7 +70,7 @@ impl ZeroProver {
     ) -> ZeroProof {
         let n: usize = self.A[0].len();
         let m: usize = self.A.len();
-        let m_0: usize = self.r.len();
+
         let a_0: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
         let b_m: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
 
@@ -78,8 +79,6 @@ impl ZeroProver {
 
         let c_A0: RistrettoPoint = self.com_ref.commit(a_0.clone(), r_0.clone());
         let c_Bm: RistrettoPoint = self.com_ref.commit(b_m.clone(), s_m.clone());
-
-        let y = trans.challenge_scalar(b"y");
 
         let blind_B: Vec<Vec<Scalar>> = [&self.B.clone()[..], 
                                             &[b_m].as_slice()]
@@ -96,11 +95,13 @@ impl ZeroProver {
                                     .concat();
         let mut d_k: Vec<Scalar> = vec![Scalar::zero(); 2*m + 1];
 
+        println!("{:?}", blind_A.iter().map(|x| x.len()).collect::<Vec<usize>>());
+        println!("{:?}", blind_B.iter().map(|x| x.len()).collect::<Vec<usize>>());
         for i in 0..=m {
             for j in 0..=m {
                 let k = m + i -j;
 
-                d_k[k] = d_k[k] + (self.bi_map)(blind_A[i].clone(), blind_B[j].clone(), y.clone());
+                d_k[k] = d_k[k] + (self.bi_map)(blind_A[i].clone(), blind_B[j].clone(), self.y.clone());
             }
         }
 
@@ -158,18 +159,22 @@ impl ZeroProver {
             t: t_val,
         }
     }
-}
-impl ZeroProof{
 
     pub fn verify(
         &mut self,
         trans: &mut Transcript,
-        com_ref: &mut CommonRef,
+        proof: ZeroProof,
     ) -> Result<(), ProofError> {
-        let m = (self.c_D.len() - 1)/ 2;
-        let n = self.a_vec.len();
+        let m = (proof.c_D.len() - 1)/ 2;
+        let n = proof.a_vec.len();
 
-        assert!(self.c_D[m+1] == com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
+        assert!(proof.c_D[m+1] == self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
+
+        let x = trans.challenge_scalar(b"x");
+        let x_pow: Vec<Scalar> = (0..=m).map(|i| x.pow((i) as u64)).collect();
+        assert!(RistrettoPoint::multiscalar_mul(&x_pow,
+                                                [&[proof.c_A0], self.c_Ai.as_slice()].concat()).compress() 
+                == self.com_ref.commit(proof.a_vec, proof.r).compress());
 
         Ok(())
     }
@@ -178,17 +183,21 @@ impl ZeroProof{
 #[test]
 fn test_base() {
     use crate::hadamard_prover::HadamProver;
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
 
     let mut prover_transcript = Transcript::new(b"testZeroProof");
 
     let mut rng = StdRng::from_entropy();
-    let n: usize = 52;
-    let m: usize = 2;
+    let m: usize = 13;
+    let n: usize = 4;
     let mut com_ref = CommonRef::new(n as u64, rng);
-    let a: Vec<Vec<Scalar>> = vec![vec![Scalar::zero(), Scalar::one()]; n];
-    let r: Vec<Scalar> = vec![Scalar::one(); n];
-    let b: Vec<Vec<Scalar>> = vec![vec![Scalar::one(), Scalar::zero()]; n];
-    let s: Vec<Scalar> = vec![Scalar::one(); n];
+    let a: Vec<Vec<Scalar>> = vec![vec![Scalar::zero(); m]; n];
+    let r: Vec<Scalar> = vec![com_ref.rand_scalar(); m];
+    let b: Vec<Vec<Scalar>> = vec![vec![com_ref.rand_scalar(); m]; n];
+    let s: Vec<Scalar> = vec![com_ref.rand_scalar(); m];
+
+    let y: Scalar = Scalar::random(&mut com_ref.rng);
 
 
     let c_A: Vec<RistrettoPoint> = com_ref.commit_mat(a.clone(), r.clone());
@@ -198,16 +207,17 @@ fn test_base() {
         c_A,
         c_B,
         HadamProver::exp_dot,
-        a,
+        y,
+        a.to_col(),
         r,
-        b,
+        b.to_col(),
         s,
         com_ref.clone()
         );
 
     let mut zero_proof: ZeroProof = zero_prover.prove(&mut prover_transcript);
 
-    assert!(zero_proof.verify(&mut prover_transcript, &mut com_ref).is_ok());
+    assert!(zero_prover.verify(&mut prover_transcript, zero_proof).is_ok());
         
 
 }
