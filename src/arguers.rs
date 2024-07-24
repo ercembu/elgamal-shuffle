@@ -3,7 +3,7 @@
 use rust_elgamal::{EncryptionKey, 
                     DecryptionKey, 
                     Scalar, 
-                    Ciphertext};
+                    Ciphertext, IsIdentity};
 
 use rand::rngs::StdRng;
 use rand::prelude::SliceRandom;
@@ -71,7 +71,7 @@ impl CommonRef {
                                             .collect::<Vec<Scalar>>(), 
                                         iter::once(H)
                                         .chain(Gs.into_iter()
-                                               .map(|G| *G))
+                                               .map(|G| G.clone()))
                                         .collect::<Vec<RistrettoPoint>>())
 
         
@@ -142,6 +142,55 @@ impl CommonRef {
 }
 
 #[test]
-fn test_common() {
+fn test_homo_add() {
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
+    use crate::traits::Addition;
+    let mut rng = StdRng::from_entropy();
+    let m: usize = 13;
+    let n: usize = 4;
+    let mut com_ref = CommonRef::new(n as u64, rng);
+
+    let a: Vec<Scalar> = vec![Scalar::random(&mut com_ref.rng); n];
+    let r: Scalar = Scalar::random(&mut com_ref.rng);
+
+    let c_a = com_ref.commit(a.clone(), r.clone());
+
+    let b: Vec<Scalar> = vec![Scalar::random(&mut com_ref.rng); n];
+    let s: Scalar = Scalar::random(&mut com_ref.rng);
+
+    let c_b = com_ref.commit(b.clone(), s.clone());
+
+    let comb: Vec<Scalar> = a.add(&b);
+    let comb_r: Scalar = r + s;
+
+    let c_comb = com_ref.commit(comb.clone(), comb_r);
+
+    assert!(c_a + c_b == c_comb);
+
+}
+#[test]
+fn test_homo_exp() {
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
+    use crate::traits::Multiplicat;
+    let mut rng = StdRng::from_entropy();
+    let m: usize = 13;
+    let n: usize = 4;
+    let mut com_ref = CommonRef::new(n as u64, rng);
+
+    let a: Vec<Scalar> = vec![Scalar::random(&mut com_ref.rng); n];
+    let r: Scalar = Scalar::random(&mut com_ref.rng);
+
+    let c_a = com_ref.commit(a.clone(), r.clone());
+
+    let s: Scalar = Scalar::random(&mut com_ref.rng);
+
+    let s_a = a.mult(&s.clone());
+    let s_r = s.clone() * r;
+
+    let c_comb = com_ref.commit(s_a, s_r);
+
+    assert!((c_a * s - c_comb).is_identity());
 
 }

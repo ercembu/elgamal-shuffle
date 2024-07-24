@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use rust_elgamal::{Scalar, Ciphertext};
+use rust_elgamal::{Scalar, Ciphertext, IsIdentity};
 use std::iter;
 
 use curve25519_dalek::ristretto::RistrettoPoint;
@@ -71,7 +71,7 @@ impl ZeroProver {
         let n: usize = self.A[0].len();
         let m: usize = self.A.len();
 
-        let a_0: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
+        let a_0: Vec<Scalar> = (0..n).map(|_| Scalar::zero()).collect();
         let b_m: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
 
         let r_0: Scalar = self.com_ref.rand_scalar();
@@ -110,9 +110,6 @@ impl ZeroProver {
             _ => self.com_ref.rand_scalar(),
         }).collect();
 
-        println!("{:#?}", d_k[m-2]);
-        println!("{:#?}", Scalar::zero());
-        
         let c_D: Vec<RistrettoPoint> = self.com_ref.commit_vec(d_k.clone(), t.clone());
 
         let x = trans.challenge_scalar(b"x");
@@ -172,9 +169,19 @@ impl ZeroProver {
 
         let x = trans.challenge_scalar(b"x");
         let x_pow: Vec<Scalar> = (0..=m).map(|i| x.pow((i) as u64)).collect();
-        assert!(RistrettoPoint::multiscalar_mul(&x_pow,
-                                                [&[proof.c_A0], self.c_Ai.as_slice()].concat()).compress() 
-                == self.com_ref.commit(proof.a_vec, proof.r).compress());
+
+        let mut commit_A: RistrettoPoint = proof.c_A0;
+
+        for i in 1..=m {
+            commit_A += self.c_Ai[i-1] * x_pow[i].clone();
+        }
+        println!("{:?}", proof.a_vec);
+        let open_A = self.com_ref.commit(proof.a_vec, proof.r);
+        println!("{:?}", commit_A.compress());
+        println!("{:?}", open_A.compress());
+        assert!((commit_A - open_A).is_identity());
+
+        
 
         Ok(())
     }
