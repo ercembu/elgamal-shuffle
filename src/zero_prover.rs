@@ -71,10 +71,10 @@ impl ZeroProver {
         let n: usize = self.A[0].len();
         let m: usize = self.A.len();
 
-        let a_0: Vec<Scalar> = (0..n).map(|_| Scalar::zero()).collect();
+        let a_0: Vec<Scalar> = (0..n).map(|_| Scalar::one()).collect();
         let b_m: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
 
-        let r_0: Scalar = self.com_ref.rand_scalar();
+        let r_0: Scalar = Scalar::one();
         let s_m: Scalar = self.com_ref.rand_scalar();
 
         let c_A0: RistrettoPoint = self.com_ref.commit(a_0.clone(), r_0.clone());
@@ -95,8 +95,6 @@ impl ZeroProver {
                                     .concat();
         let mut d_k: Vec<Scalar> = vec![Scalar::zero(); 2*m + 1];
 
-        println!("{:?}", blind_A.iter().map(|x| x.len()).collect::<Vec<usize>>());
-        println!("{:?}", blind_B.iter().map(|x| x.len()).collect::<Vec<usize>>());
         for i in 0..=m {
             for j in 0..=m {
                 let k = m + i -j;
@@ -170,23 +168,94 @@ impl ZeroProver {
         let x = trans.challenge_scalar(b"x");
         let x_pow: Vec<Scalar> = (0..=m).map(|i| x.pow((i) as u64)).collect();
 
+        /// proof of commitments to A
         let mut commit_A: RistrettoPoint = proof.c_A0;
 
         for i in 1..=m {
             commit_A += self.c_Ai[i-1] * x_pow[i].clone();
         }
-        println!("{:?}", proof.a_vec);
-        let open_A = self.com_ref.commit(proof.a_vec, proof.r);
-        println!("{:?}", commit_A.compress());
-        println!("{:?}", open_A.compress());
+        let open_A = self.com_ref.commit(proof.a_vec.clone(), proof.r);
         assert!((commit_A - open_A).is_identity());
 
+        /// proof of commitments to B
+
+        let mut commit_B: RistrettoPoint 
+            = (0..=m-1).fold(proof.c_Bm,
+                               |acc, j|
+                               acc + self.c_Bi[j] * x_pow[m-j].clone()
+                            );
+        let open_B = self.com_ref.commit(proof.b_vec.clone(), proof.s);
+        assert!((commit_A - open_A).is_identity());
+
+        let mut commit_D: RistrettoPoint
+            = (1..=2*m).fold(proof.c_D[0],
+                            |acc, k|
+                            acc + proof.c_D[k] * x.pow((k) as u64)
+                            );
+
+
+        let open_values: Scalar = (self.bi_map)(proof.a_vec, proof.b_vec, self.y.clone());
+
+        let open_D = self.com_ref.commit(vec![open_values], proof.t);
+
+        assert!((commit_D - open_D).is_identity());
         
 
         Ok(())
     }
 }
 
+#[test]
+fn test_c_A() {
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
+    
+    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
+    let m: usize = 13;
+    let n: usize = 4;
+    let mut com_ref = CommonRef::new(n as u64, rng);
+    let a: Vec<Vec<Scalar>> = vec![vec![com_ref.rand_scalar(); m]; n];
+    let r: Vec<Scalar> = vec![com_ref.rand_scalar(); m];
+
+    let a_col = a.to_col();
+
+    let c_A: Vec<RistrettoPoint> = com_ref.commit_mat(a.clone(), r.clone());
+
+    let a_0: Vec<Scalar> = (0..n).map(|_| com_ref.rand_scalar()).collect();
+    let r_0: Scalar = com_ref.rand_scalar();
+    let c_A0: RistrettoPoint = com_ref.commit(a_0.clone(), r_0.clone());
+
+    let blind_A: Vec<Vec<Scalar>> = [&[a_0].as_slice(),
+                                        &a_col.clone()[..]]
+                                    .concat();
+
+    let blind_r: Vec<Scalar> = [&[r_0].as_slice(),
+                                &r.clone()[..]]
+                                .concat();
+
+    let x = com_ref.rand_scalar();
+    let a_p : Vec<Scalar> = (0..=m).fold(
+        vec![Scalar::zero(); n],
+        |acc, i|
+        acc.add(&blind_A[i].mult(&x.pow(i as u64)))
+        );
+
+    let r_p : Scalar = (0..=m).fold(
+        Scalar::zero(),
+        |acc, i|
+        acc + (blind_r[i] * x.pow(i as u64))
+        );
+
+    let x_pow: Vec<Scalar> = (0..=m).map(|i| x.pow((i) as u64)).collect();
+
+    let mut commit_A: RistrettoPoint = c_A0;
+
+    for i in 1..=m {
+        commit_A += c_A[i-1] * x_pow[i].clone();
+    }
+    let open_A = com_ref.commit(a_p, r_p);
+    assert!((commit_A - open_A).is_identity());
+}
 #[test]
 fn test_base() {
     use crate::hadamard_prover::HadamProver;
@@ -195,7 +264,7 @@ fn test_base() {
 
     let mut prover_transcript = Transcript::new(b"testZeroProof");
 
-    let mut rng = StdRng::from_entropy();
+    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 13;
     let n: usize = 4;
     let mut com_ref = CommonRef::new(n as u64, rng);
@@ -224,7 +293,8 @@ fn test_base() {
 
     let mut zero_proof: ZeroProof = zero_prover.prove(&mut prover_transcript);
 
-    assert!(zero_prover.verify(&mut prover_transcript, zero_proof).is_ok());
+    let mut verifier_transcript = Transcript::new(b"testZeroProof");
+    assert!(zero_prover.verify(&mut verifier_transcript, zero_proof).is_ok());
         
 
 }
