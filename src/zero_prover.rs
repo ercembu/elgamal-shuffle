@@ -68,6 +68,7 @@ impl ZeroProver {
         &mut self, 
         trans: &mut Transcript
     ) -> ZeroProof {
+        trans.append_message(b"dom-sep", b"ZeroProof");
         let n: usize = self.A[0].len();
         let m: usize = self.A.len();
 
@@ -160,6 +161,7 @@ impl ZeroProver {
         trans: &mut Transcript,
         proof: ZeroProof,
     ) -> Result<(), ProofError> {
+        trans.append_message(b"dom-sep", b"ZeroProof");
         let m = (proof.c_D.len() - 1)/ 2;
         let n = proof.a_vec.len();
 
@@ -267,7 +269,7 @@ fn test_base() {
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 13;
     let n: usize = 4;
-    let mut com_ref = CommonRef::new(n as u64, rng);
+    let mut com_ref = CommonRef::new((n*m) as u64, rng);
     let a: Vec<Vec<Scalar>> = vec![vec![Scalar::zero(); m]; n];
     let r: Vec<Scalar> = vec![com_ref.rand_scalar(); m];
     let b: Vec<Vec<Scalar>> = vec![vec![com_ref.rand_scalar(); m]; n];

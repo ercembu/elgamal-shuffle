@@ -76,6 +76,7 @@ impl HadamProver {
         &mut self,
         trans: &mut Transcript,
     ) -> HadamProof {
+        trans.append_message(b"dom_sep", b"HadamardProof");
 
         let m = self.A.len();
         let n = self.A[0].len();
@@ -121,7 +122,7 @@ impl HadamProver {
         let c_D: RistrettoPoint = RistrettoPoint::multiscalar_mul(&x_pow[0..m-1],
                                                                   &c_B[1..m]);
 
-        let c_1: RistrettoPoint = self.com_ref.commit(vec![-Scalar::from(1 as u128); m*n], 
+        let c_1: RistrettoPoint = self.com_ref.commit(vec![-Scalar::one(); m*n], 
                                       Scalar::zero());
 
         let D: Vec<Vec<Scalar>> = (0..m).map(
@@ -173,6 +174,7 @@ impl HadamProver {
         trans: &mut Transcript,
         proof: HadamProof,
     ) -> Result<(), ProofError> {
+        trans.append_message(b"dom_sep", b"HadamardProof");
         let mut zero_prover = proof.zero_prover;
         zero_prover.verify(trans, proof.zero_proof)?;
         Ok(())
@@ -189,9 +191,9 @@ fn test_base() {
     let m: usize = 4;
     let n: usize = 2;
     let mut com_ref = CommonRef::new((m*n) as u64, rng);
-    let a: Vec<Vec<Scalar>> = vec![vec![Scalar::one(), Scalar::one()]; m];
-    let r: Vec<Scalar> = vec![Scalar::zero(); m];
-    let s: Scalar = Scalar::zero();
+    let a: Vec<Vec<Scalar>> = vec![vec![Scalar::one(); m]; n];
+    let r: Vec<Scalar> = vec![Scalar::one(); m];
+    let s: Scalar = Scalar::one();
 
     let b: Vec<Scalar> = a.iter()
         .fold(
@@ -206,7 +208,7 @@ fn test_base() {
     let mut hadam_prover =  HadamProver::new(
         c_A,
         c_B,
-        a,
+        a.to_col(),
         r,
         b,
         s,
@@ -215,7 +217,8 @@ fn test_base() {
 
     let mut hadam_proof = hadam_prover.prove(&mut prover_transcript);
 
-    assert!(hadam_prover.verify(&mut prover_transcript, hadam_proof).is_ok());
+    let mut verifier_transcript = Transcript::new(b"testHadamProof");
+    assert!(hadam_prover.verify(&mut verifier_transcript, hadam_proof).is_ok());
 
 
 }
