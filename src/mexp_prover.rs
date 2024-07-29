@@ -10,6 +10,7 @@ use crate::arguers::CommonRef;
 use crate::transcript::TranscriptProtocol;
 
 use crate::enums::EGInp;
+use crate::utils::Challenges;
 use bulletproofs::ProofError;
 
 use crate::traits::{EGMult, InnerProduct, Addition, Multiplicat};
@@ -49,6 +50,8 @@ pub struct MexpProver {
 
     /// Common reference key
     com_ref: CommonRef,
+
+    chall: Challenges,
 }
 
 impl MexpProver {
@@ -69,6 +72,7 @@ impl MexpProver {
             r: r,
             rho: rho,
             com_ref: com_ref,
+            chall: Challenges::default(),
         }
     }
     ///C_x = ElG(1;rho)C'^b
@@ -120,10 +124,9 @@ impl MexpProver {
                                             self.com_ref.encrypt(&EGInp::Scal(*_b) 
                                                                   ,_tau)
                                         }).collect();
-        //println!("{:#?}", Gbk[m]);
-        //println!("{:#?}", self.com_ref.encrypt(&EGInp::Scal(Scalar::zero()),
-        //                    &self.rho.clone()));
-        Gbk[m] = Gbk[m] - Gbk[m];
+        println!("{:#?}", Gbk[m]);
+        println!("{:#?}", self.com_ref.encrypt(&EGInp::Scal(Scalar::zero()),
+                            &self.rho.clone()));
 
         for i in 0..m {
             for j in 0..=m {
@@ -147,7 +150,7 @@ impl MexpProver {
 
         let x_: Vec<Scalar> = (1..=m).map(|exp| x.pow(exp.try_into().unwrap())).collect();
 
-        let Ax: Vec<Scalar> = self.A.mult(&x_);
+        let Ax: Vec<Scalar> = self.A.to_col().mult(&x_);
         let a_: Vec<Scalar> = a_0.add(&Ax);
 
         let r: Scalar = r_0 + self.r.clone().dot(&x_);
@@ -190,14 +193,13 @@ impl MexpProver {
     ) -> Result<(), ProofError> {
         let (m, n) = self.C_mat.size();
         trans.mexp_domain_sep(m.clone() as u64, (m/2).try_into().unwrap());
-        trans.validate_and_append_point(b"c_A0", &proof.c_A0.compress())?;
         //TODO:maybe not needed
         //trans.val_append_point_vec(b"c_Bk", &proof.c_Bk.iter()
         //                                .map(|p| p.compress()).collect())?;
-        trans.val_append_cipher_vec(b"Ek", &proof.Ek)?;
 
         assert!(proof.c_Bk[m] == self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
         //TODO: problematic, check for encryption correctness
+        println!("{}", proof.Ek.len());
         assert!(proof.Ek[m] == self.C);
 
         trans.append_scalar_vec(b"a_", &proof.a_);
@@ -207,5 +209,63 @@ impl MexpProver {
         trans.append_scalar(b"tau", &proof.tau);
         Ok(())
     }
+}
+
+#[test]
+fn test_mexp_base() {
+    use super::*;
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
+    use crate::EGInp;
+    
+    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
+    let m: usize = 6;
+    let n: usize = 4;
+
+    let mut cr = CommonRef::new((m*n) as u64, rng);
+
+    let deck: Vec<Scalar> = (0..(m*n)).map(|card| Scalar::from(card as u64))
+                                    .collect();
+    let deck_r: Vec<Scalar> = (0..(m*n)).map(|_| cr.rand_scalar()).collect();
+    let C_deck: Vec<Ciphertext> = deck.iter()
+                                        .zip(deck_r.clone())
+                                        .map(|(card, r)| cr.encrypt(&EGInp::Scal(card.clone()), 
+                                                                    &r
+                                                        )
+                                        )
+                                    .collect();
+    let mut c_iter = C_deck.clone().into_iter();
+    let C_mat: Vec<Vec<Ciphertext>> = (0..m).map(|_| (0..n).map(|_| c_iter.next().unwrap()).collect::<Vec<Ciphertext>>()).collect();
+
+    let A: Vec<Vec<Scalar>> = vec![vec![cr.rand_scalar(); m];n];
+    let r: Vec<Scalar> = vec![cr.rand_scalar(); m];
+
+    let c_A = cr.commit_mat(A.clone(), r.clone());
+
+    let A = A.to_col();
+
+    let rho: Scalar = cr.rand_scalar();
+    let base: Ciphertext = cr.encrypt(&EGInp::Scal(Scalar::zero()), &rho);
+
+    let C: Ciphertext = (0..m).fold(base.clone(), |acc, i| acc + 
+                                                    (&C_mat[i][..]).pow(&A[i][..])
+                                                    );
+
+    let mut mexp_prover = MexpProver::new(
+            C_mat,
+            C,
+            c_A,
+            A,
+            r,
+            rho,
+            cr.clone()
+        );
+
+    let x: Scalar = Scalar::one();
+    let mut prover_transcript = Transcript::new(b"testMexpProof");
+    let mexp_proof = mexp_prover.prove(&mut prover_transcript, x.clone());
+    let mut verifier_transcript = Transcript::new(b"testMexpProof");
+
+    assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
 
 }

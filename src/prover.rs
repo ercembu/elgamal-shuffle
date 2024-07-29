@@ -121,7 +121,7 @@ impl ShuffleProver {
                                                            .collect::<Vec<Scalar>>()
                                                             ).collect();
         let mut mexp_prover = MexpProver::new(C_mat, C_x, c_b.clone(), b_mat, s.clone(), rho_, self.com_ref.clone());
-        let mexp_proof = MexpProof::default(); //mexp_prover.prove(trans, x.clone());
+        let mexp_proof = mexp_prover.prove(trans, x.clone());
 
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
@@ -205,7 +205,7 @@ impl ShuffleProver {
 
         let mexp_proof = proof.mexp;
         let mut mexp_prover = proof.mexp_prover;
-        //mexp_prover.verify(mexp_proof, trans)?;
+        mexp_prover.verify(mexp_proof, trans)?;
         let mut prod_prover = proof.prod_prover;
         assert!(prod_prover.verify(trans, proof.prod).is_ok());
 
@@ -354,7 +354,7 @@ fn test_prover() {
     let pi: Vec<u64> = cr.rand_perm(&(1..=((m*n) as u64)).collect());
     let rho: Vec<Scalar> = vec![cr.rand_scalar(); m*n];
 
-    let base: Vec<Ciphertext> = cr.encrypt_vec(vec![Scalar::one(); m*n].as_slice(), &rho.clone());
+    let base: Vec<Ciphertext> = cr.encrypt_vec(vec![Scalar::zero(); m*n].as_slice(), &rho.clone());
 
     let C_pid: Vec<Ciphertext> = pi.iter()
         .map(|i|
