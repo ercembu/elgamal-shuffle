@@ -56,7 +56,6 @@ impl ProdProver {
     pub fn prove(
         &mut self,
         trans: &mut Transcript,
-        x: Scalar,
     ) -> ProdProof {
         let s: Scalar = self.com_ref.rand_scalar();
 
@@ -97,4 +96,41 @@ impl ProdProver {
         had_prover.verify(trans, proof.had_proof)?;
         Ok(())
     }
+}
+
+#[test]
+fn test_prod() {
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
+    
+    let mut prover_transcript = Transcript::new(b"testProdProof");
+
+    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
+    let m: usize = 4;
+    let n: usize = 4;
+    let mut com_ref = CommonRef::new((m*n) as u64, rng);
+
+    let a: Vec<Vec<Scalar>> = vec![vec![com_ref.rand_scalar(); m]; n];
+    let r: Vec<Scalar> = vec![com_ref.rand_scalar(); m];
+
+    let b: Scalar = a.clone().into_iter().flatten()
+        .fold(Scalar::one(),
+        |acc, a_ij|
+        acc * a_ij
+        );
+
+    let c_A: Vec<RistrettoPoint> = com_ref.commit_mat(a.clone(), r.clone());
+
+    let mut prod_prover = ProdProver::new(
+        c_A,
+        a,
+        r,
+        b,
+        com_ref);
+    let proof = prod_prover.prove(&mut prover_transcript);
+
+    let mut verifier_transcript = Transcript::new(b"testProdProof");
+
+    assert!(prod_prover.verify(&mut verifier_transcript, proof).is_ok());
+
 }

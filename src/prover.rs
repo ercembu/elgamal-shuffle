@@ -169,7 +169,7 @@ impl ShuffleProver {
                 - z)
             );
         let mut prod_prover = ProdProver::new(cd_cz, d_z, t, product, self.com_ref.clone());
-        let prod_proof = prod_prover.prove(trans, x.clone());
+        let prod_proof = prod_prover.prove(trans);
 
 
 
@@ -202,6 +202,5 @@ impl ShuffleProver {
 
         Ok(())
     }
-
-
 }
+

@@ -19,7 +19,6 @@ use crate::zero_prover::{ZeroProof, ZeroProver};
 #[derive(Clone)]
 pub struct HadamProof{
     c_Bi: Vec<RistrettoPoint>,
-    c_Di: Vec<RistrettoPoint>,
     c_D: RistrettoPoint,
     c_1: RistrettoPoint,
     zero_proof: ZeroProof,
@@ -161,10 +160,9 @@ impl HadamProver {
         let zero_proof: ZeroProof = zero_prover.prove(trans);
         
         HadamProof {
-            c_Bi: vec![],
-            c_Di: vec![],
-            c_D: c_D.clone(),
-            c_1: RistrettoPoint::random(&mut self.com_ref.rng),
+            c_Bi: c_B,
+            c_D: c_D,
+            c_1: c_1,
             zero_proof: zero_proof,
             zero_prover: zero_prover,
         }
@@ -175,6 +173,12 @@ impl HadamProver {
         proof: HadamProof,
     ) -> Result<(), ProofError> {
         trans.append_message(b"dom_sep", b"HadamardProof");
+        let m = proof.c_Bi.len();
+        let n = self.A[0].len();
+        assert!(proof.c_Bi[0] == self.c_A[0]);
+        assert!(proof.c_Bi[m-1] == self.c_b);
+        assert!(proof.c_1 == self.com_ref.commit(vec![-Scalar::one();n],
+                                                    Scalar::zero()));
         let mut zero_prover = proof.zero_prover;
         zero_prover.verify(trans, proof.zero_proof)?;
         Ok(())
@@ -189,11 +193,11 @@ fn test_base() {
 
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 4;
-    let n: usize = 2;
+    let n: usize = 4;
     let mut com_ref = CommonRef::new((m*n) as u64, rng);
-    let a: Vec<Vec<Scalar>> = vec![vec![Scalar::one(); m]; n];
-    let r: Vec<Scalar> = vec![Scalar::one(); m];
-    let s: Scalar = Scalar::one();
+    let a: Vec<Vec<Scalar>> = vec![vec![com_ref.rand_scalar(); m]; n];
+    let r: Vec<Scalar> = vec![com_ref.rand_scalar(); m];
+    let s: Scalar = com_ref.rand_scalar();
 
     let b: Vec<Scalar> = a.to_col().iter()
         .fold(
