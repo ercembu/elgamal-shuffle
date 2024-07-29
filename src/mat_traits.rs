@@ -49,7 +49,7 @@ impl Multiplicat for Vec<Vec<Scalar>>
     type Out = Vec<Scalar>;
 
     fn mult(&self, rhs: &Vec<Scalar>) -> Vec<Scalar> {
-        assert!(self.index(0).len() == rhs.len());
+        assert!(self.len() == rhs.len());
         self.iter()
             .zip(rhs.iter())
             .map(|(row, x)| row.mult(x))
@@ -63,7 +63,7 @@ impl Multiplicat for Vec<Vec<&Scalar>>
     type Out = Vec<Scalar>;
 
     fn mult(&self, rhs: &Vec<Scalar>) -> Vec<Scalar> {
-        assert!(self.index(0).len() == rhs.len());
+        assert!(self.len() == rhs.len());
         self.iter()
             .zip(rhs.iter())
             .map(|(row, x)| row.mult(x))

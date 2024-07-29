@@ -124,9 +124,6 @@ impl MexpProver {
                                             self.com_ref.encrypt(&EGInp::Scal(*_b) 
                                                                   ,_tau)
                                         }).collect();
-        println!("{:#?}", Gbk[m]);
-        println!("{:#?}", self.com_ref.encrypt(&EGInp::Scal(Scalar::zero()),
-                            &self.rho.clone()));
 
         for i in 0..m {
             for j in 0..=m {
@@ -140,31 +137,21 @@ impl MexpProver {
 
         let Ek: Vec<Ciphertext> = Gbk;
 
-        //Send: cA0, {cBk}2m−1k=0 , {Ek}2m−1k=0
-        trans.append_point(b"c_A0", &c_A0.compress());
-        trans.append_point_vec(b"c_Bk", &c_Bk.iter()
-                                        .map(|p| p.compress()).collect());
-        trans.append_cipher_vec(b"Ek", &Ek);
         //Challenge: x ← Z∗q.
+
+        self.chall.x = x.clone();
 
 
         let x_: Vec<Scalar> = (1..=m).map(|exp| x.pow(exp.try_into().unwrap())).collect();
 
-        let Ax: Vec<Scalar> = self.A.to_col().mult(&x_);
+        let Ax: Vec<Scalar> = self.A.mult(&x_);
         let a_: Vec<Scalar> = a_0.add(&Ax);
 
         let r: Scalar = r_0 + self.r.clone().dot(&x_);
 
-        let b: Scalar = b_[0] + (1..m*2 -1).map(|k| 
-                                               b_[k] * x.pow(k.try_into().unwrap()))
-                                            .reduce(|acc, bx| acc + bx).unwrap();
-
-        let s: Scalar = s_[0] + (1..m*2 -1).map(|k| 
-                                               s_[k] * x.pow(k.try_into().unwrap()))
-                                            .reduce(|acc, sx| acc + sx).unwrap();
-        let tau: Scalar = tau_[0] + (1..m*2 -1).map(|k| 
-                                               tau_[k] * x.pow(k.try_into().unwrap()))
-                                            .reduce(|acc, taux| acc + taux).unwrap();
+        let b: Scalar = (1..=2*m-1).fold(b_[0], |acc, k| acc + b_[k] * x.pow(k as u64));
+        let s: Scalar = (1..=2*m-1).fold(s_[0], |acc, k| acc + s_[k] * x.pow(k as u64));
+        let tau: Scalar = (1..=2*m-1).fold(tau_[0], |acc, k| acc + tau_[k] * x.pow(k as u64));
         //Send: a_, r, b, s, tau
         trans.append_scalar_vec(b"a_", &a_);
         trans.append_scalar(b"r", &r);
@@ -198,15 +185,40 @@ impl MexpProver {
         //                                .map(|p| p.compress()).collect())?;
 
         assert!(proof.c_Bk[m] == self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
-        //TODO: problematic, check for encryption correctness
-        println!("{}", proof.Ek.len());
         assert!(proof.Ek[m] == self.C);
 
-        trans.append_scalar_vec(b"a_", &proof.a_);
-        trans.append_scalar(b"r", &proof.r);
-        trans.append_scalar(b"b", &proof.b);
-        trans.append_scalar(b"s", &proof.s);
-        trans.append_scalar(b"tau", &proof.tau);
+        let x_: Vec<Scalar> = (1..=m).map(|exp| self.chall.x.pow(exp.try_into().unwrap())).collect();
+
+        let open_A: RistrettoPoint = self.c_A.iter()
+            .zip(x_.iter())
+            .fold(proof.c_A0, |acc, (a, x)| acc + (a * x));
+
+        let commit_A: RistrettoPoint = self.com_ref.commit(proof.a_.clone(),
+                                                            proof.r.clone());
+
+        let x = self.chall.x.clone();
+
+        assert!(open_A == commit_A);
+
+        let open_B: RistrettoPoint = (1..=2*m-1).fold(proof.c_Bk[0], |acc, i|
+                                                    acc + (proof.c_Bk[i] 
+                                                    * x.pow((i) as u64)));
+        let commit_B: RistrettoPoint = self.com_ref.commit(vec![proof.b.clone()],
+                                                           proof.s.clone());
+
+        assert!(open_B == commit_B);
+
+        let open_E: Ciphertext = (1..=2*m-1).fold(proof.Ek[0], |acc, k|
+                                                  acc + proof.Ek[k] * x.pow(k as u64));
+
+        let commit_E: Ciphertext = (0..m).fold(
+            self.com_ref.encrypt(&EGInp::Scal(proof.b), &proof.tau),
+            |acc, i|
+            acc + (&self.C_mat[i][..]).pow(&proof.a_.mult(&x.pow((m-i-1) as u64))[..])
+        );
+
+        assert!(open_E == commit_E);
+
         Ok(())
     }
 }
@@ -261,7 +273,7 @@ fn test_mexp_base() {
             cr.clone()
         );
 
-    let x: Scalar = Scalar::one();
+    let x: Scalar = cr.rand_scalar();
     let mut prover_transcript = Transcript::new(b"testMexpProof");
     let mexp_proof = mexp_prover.prove(&mut prover_transcript, x.clone());
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
