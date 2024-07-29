@@ -7,6 +7,7 @@ use merlin::Transcript;
 use crate::arguers::CommonRef;
 use crate::transcript::TranscriptProtocol;
 use crate::hadamard_prover::{HadamProof, HadamProver};
+use crate::sv_prover::{SVProof, SVProver};
 use crate::errors::ProofError;
 
 use crate::traits::{EGMult, InnerProduct};
@@ -16,6 +17,8 @@ pub struct ProdProof {
     pub(crate) c_b: RistrettoPoint,
     pub(crate) had_proof: HadamProof,
     pub(crate) had_prover: HadamProver,
+    pub(crate) sv_proof: SVProof,
+    pub(crate) sv_prover: SVProver,
 }
 ///Prover struct for Product Argument
 #[derive(Clone)]
@@ -79,11 +82,22 @@ impl ProdProver {
 
         let hadamard_proof: HadamProof = hadamard_prover.prove(trans);
         //TODO: SINGLE_VALUE PRODUCT
+        //
+        let mut sv_prover: SVProver = SVProver::new(c_b,
+                                                    a_vec,
+                                                    self.b,
+                                                    s,
+                                                    self.com_ref.clone()
+                                                    );
+
+        let sv_proof: SVProof = sv_prover.prove(trans);
         
         ProdProof {
             c_b: RistrettoPoint::random(&mut self.com_ref.rng),
             had_proof: hadamard_proof,
             had_prover: hadamard_prover,
+            sv_proof: sv_proof,
+            sv_prover: sv_prover,
         }
     }
 
@@ -94,6 +108,9 @@ impl ProdProver {
     ) -> Result<(), ProofError> {
         let mut had_prover = proof.had_prover;
         had_prover.verify(trans, proof.had_proof)?;
+
+        let mut sv_prover = proof.sv_prover;
+        sv_prover.verify(trans, proof.sv_proof)?;
         Ok(())
     }
 }
