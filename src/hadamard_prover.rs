@@ -68,7 +68,7 @@ impl HadamProver {
             .fold(
                 Scalar::zero(),
                 |acc, j|
-                acc + (a[j] * d[j] * y.pow(j as u64))
+                acc + (a[j] * d[j] * y.pow((j+1) as u64))
                 )
     }
 
@@ -87,7 +87,7 @@ impl HadamProver {
                 match i {
                     i if i == m-1 => self.b.clone(),
                     _ => (0..i+1).fold(
-                            vec![Scalar::from(1 as u128); n],
+                            vec![Scalar::one(); n],
                             |acc, j|
                             acc.hadamard(self.A[j].clone())
                         ),
@@ -114,23 +114,23 @@ impl HadamProver {
         let y = trans.challenge_scalar(b"y");
 
         let x_pow: Vec<Scalar> = (0..c_B.len()).map(|i| x.pow((i+1) as u64)).collect();
-        let c_Di: Vec<RistrettoPoint> = (0..c_B.len()).map(
+        let c_Di: Vec<RistrettoPoint> = (0..c_B.len()-1).map(
             |i|
-            c_B[i] * x_pow[i]
+            c_B[i] * x_pow[i].clone()
         ).collect();
 
         let c_D: RistrettoPoint = RistrettoPoint::multiscalar_mul(&x_pow[0..m-1],
                                                                   &c_B[1..m]);
 
-        let c_1: RistrettoPoint = self.com_ref.commit(vec![-Scalar::one(); m*n], 
+        let c_1: RistrettoPoint = self.com_ref.commit(vec![-Scalar::one(); n], 
                                       Scalar::zero());
 
-        let D: Vec<Vec<Scalar>> = (0..m).map(
+        let D: Vec<Vec<Scalar>> = (0..m-1).map(
             |i|
             B[i].mult(&x.pow((i+1) as u64))
         ).collect();
 
-        let t_: Vec<Scalar> = (0..m).map(
+        let t_: Vec<Scalar> = (0..m-1).map(
             |i|
             s_vec[i] * x.pow((i+1) as u64)
         ).collect();
@@ -152,8 +152,8 @@ impl HadamProver {
             [&c_Di[0..m-1], &[c_D].as_slice()].concat(),
             HadamProver::exp_dot,
             y.clone(),
-            self.A.clone(),
-            self.r.clone(),
+            [&self.A.clone()[1..m], &[vec![-Scalar::one(); n]]].concat(),
+            [&self.r.clone()[1..m], &[Scalar::zero()]].concat(),
             [D.clone().as_slice(), &[d]].concat(),
             [t_.clone().as_slice(), &[t]].concat(),
             self.com_ref.clone());
@@ -187,7 +187,7 @@ fn test_base() {
     use rand::SeedableRng;
     let mut prover_transcript = Transcript::new(b"testHadamProof");
 
-    let mut rng = StdRng::from_entropy();
+    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 4;
     let n: usize = 2;
     let mut com_ref = CommonRef::new((m*n) as u64, rng);
@@ -195,9 +195,9 @@ fn test_base() {
     let r: Vec<Scalar> = vec![Scalar::one(); m];
     let s: Scalar = Scalar::one();
 
-    let b: Vec<Scalar> = a.iter()
+    let b: Vec<Scalar> = a.to_col().iter()
         .fold(
-            vec![Scalar::from(1 as u128); n],
+            vec![Scalar::one(); n],
             |acc, a_i|
             acc.hadamard(a_i.clone())
             );

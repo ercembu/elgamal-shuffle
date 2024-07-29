@@ -24,6 +24,7 @@ pub struct ZeroProof {
     r: Scalar,
     s: Scalar,
     t: Scalar,
+    x: Scalar,
 }
 
 #[derive(Clone)]
@@ -72,20 +73,20 @@ impl ZeroProver {
         let n: usize = self.A[0].len();
         let m: usize = self.A.len();
 
-        let a_0: Vec<Scalar> = (0..n).map(|_| Scalar::one()).collect();
+        let a_0: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
         let b_m: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
 
-        let r_0: Scalar = Scalar::one();
+        let r_0: Scalar = self.com_ref.rand_scalar();;
         let s_m: Scalar = self.com_ref.rand_scalar();
 
         let c_A0: RistrettoPoint = self.com_ref.commit(a_0.clone(), r_0.clone());
         let c_Bm: RistrettoPoint = self.com_ref.commit(b_m.clone(), s_m.clone());
 
-        let blind_B: Vec<Vec<Scalar>> = [&self.B.clone()[..], 
-                                            &[b_m].as_slice()]
-                                        .concat();
         let blind_A: Vec<Vec<Scalar>> = [&[a_0].as_slice(),
                                             &self.A.clone()[..]]
+                                        .concat();
+        let blind_B: Vec<Vec<Scalar>> = [&self.B.clone()[..], 
+                                            &[b_m].as_slice()]
                                         .concat();
 
         let blind_r: Vec<Scalar> = [&[r_0].as_slice(),
@@ -112,6 +113,7 @@ impl ZeroProver {
         let c_D: Vec<RistrettoPoint> = self.com_ref.commit_vec(d_k.clone(), t.clone());
 
         let x = trans.challenge_scalar(b"x");
+        println!("{:#?}", x);
 
         let a : Vec<Scalar> = (0..=m).fold(
             vec![Scalar::zero(); n],
@@ -153,6 +155,7 @@ impl ZeroProver {
             r: r,
             s: s,
             t: t_val,
+            x: x,
         }
     }
 
@@ -165,9 +168,10 @@ impl ZeroProver {
         let m = (proof.c_D.len() - 1)/ 2;
         let n = proof.a_vec.len();
 
-        assert!(proof.c_D[m+1] == self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
+        assert!((proof.c_D[m+1] - self.com_ref.commit(vec![Scalar::zero()], Scalar::zero())).is_identity());
 
-        let x = trans.challenge_scalar(b"x");
+        let x = proof.x;//trans.challenge_scalar(b"x");
+        println!("{:#?}", x);
         let x_pow: Vec<Scalar> = (0..=m).map(|i| x.pow((i) as u64)).collect();
 
         /// proof of commitments to A
@@ -187,7 +191,7 @@ impl ZeroProver {
                                acc + self.c_Bi[j] * x_pow[m-j].clone()
                             );
         let open_B = self.com_ref.commit(proof.b_vec.clone(), proof.s);
-        assert!((commit_A - open_A).is_identity());
+        assert!((commit_B - open_B).is_identity());
 
         let mut commit_D: RistrettoPoint
             = (1..=2*m).fold(proof.c_D[0],
@@ -276,6 +280,17 @@ fn test_base() {
     let s: Vec<Scalar> = vec![com_ref.rand_scalar(); m];
 
     let y: Scalar = Scalar::random(&mut com_ref.rng);
+
+    let mut a_col = a.to_col();
+    let mut b_col = b.to_col();
+
+    a_col[0] = vec![com_ref.rand_scalar(); n];
+    b_col[0] = vec![Scalar::zero(); n];
+
+    a_col[m-1] = vec![com_ref.rand_scalar(); n];
+    b_col[m-1] = vec![Scalar::zero(); n];
+    let a = a_col.to_col();
+    let b = b_col.to_col();
 
 
     let c_A: Vec<RistrettoPoint> = com_ref.commit_mat(a.clone(), r.clone());
