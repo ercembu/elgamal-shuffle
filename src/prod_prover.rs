@@ -9,6 +9,7 @@ use crate::transcript::TranscriptProtocol;
 use crate::hadamard_prover::{HadamProof, HadamProver};
 use crate::sv_prover::{SVProof, SVProver};
 use crate::errors::ProofError;
+use crate::utils::Challenges;
 
 use crate::traits::{EGMult, InnerProduct};
 use crate::mat_traits::MatTraits;
@@ -37,6 +38,9 @@ pub struct ProdProver {
 
     /// Common reference key
     com_ref: CommonRef,
+    
+    /// Challenges from oracle, purely random
+    pub(crate) chall: Challenges
 }
 
 impl ProdProver {
@@ -52,7 +56,8 @@ impl ProdProver {
             A: A,
             r: r,
             b: b,
-            com_ref: com_ref
+            com_ref: com_ref,
+            chall: Challenges{x:Scalar::one(), y:Scalar::one(), z:Scalar::one()},
         }
     }
 
@@ -65,9 +70,9 @@ impl ProdProver {
         let m = self.A.len();
         let n = self.A[0].len();
 
-        let a_vec: Vec<Scalar> = (0..m)
+        let a_vec: Vec<Scalar> = (0..n)
             .map(|i| {
-                (0..n)
+                (0..m)
                     .fold(
                         Scalar::from(1 as u128),
                         |acc, j|
@@ -80,6 +85,7 @@ impl ProdProver {
         //TODO: HADAMARD ARGUMENT
         let mut hadamard_prover: HadamProver = HadamProver::new(self.c_A.clone(), c_b.clone(), self.A.clone(), self.r.clone(), a_vec.clone(),  s.clone(), self.com_ref.clone());
 
+        hadamard_prover.chall = self.chall.clone();
         let hadamard_proof: HadamProof = hadamard_prover.prove(trans);
         //TODO: SINGLE_VALUE PRODUCT
         //
@@ -89,6 +95,7 @@ impl ProdProver {
                                                     s,
                                                     self.com_ref.clone()
                                                     );
+        sv_prover.chall = self.chall.clone();
 
         let sv_proof: SVProof = sv_prover.prove(trans);
         
@@ -124,7 +131,7 @@ fn test_prod() {
 
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 4;
-    let n: usize = 4;
+    let n: usize = 6;
     let mut com_ref = CommonRef::new((m*n) as u64, rng);
 
     let a: Vec<Vec<Scalar>> = vec![vec![com_ref.rand_scalar(); m]; n];
@@ -140,7 +147,7 @@ fn test_prod() {
 
     let mut prod_prover = ProdProver::new(
         c_A,
-        a,
+        a.to_col(),
         r,
         b,
         com_ref);

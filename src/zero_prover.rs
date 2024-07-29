@@ -13,6 +13,7 @@ use crate::errors::ProofError;
 use crate::traits::{Hadamard, EGMult, InnerProduct, Multiplicat,
                     Addition};
 use crate::mat_traits::MatTraits;
+use crate::utils::Challenges;
 
 #[derive(Clone)]
 pub struct ZeroProof {
@@ -37,7 +38,9 @@ pub struct ZeroProver {
     r: Vec<Scalar>,
     B: Vec<Vec<Scalar>>,
     s: Vec<Scalar>,
-    com_ref: CommonRef
+    com_ref: CommonRef,
+    /// Challenges from oracle, purely random
+    pub(crate) chall: Challenges
 }
 
 impl ZeroProver {
@@ -62,6 +65,7 @@ impl ZeroProver {
             B: B,
             s: s,
             com_ref: com_ref,
+            chall: Challenges{x:Scalar::one(), y:Scalar::one(), z:Scalar::one()},
         }
     }
 
@@ -112,8 +116,7 @@ impl ZeroProver {
 
         let c_D: Vec<RistrettoPoint> = self.com_ref.commit_vec(d_k.clone(), t.clone());
 
-        let x = trans.challenge_scalar(b"x");
-        println!("{:#?}", x);
+        let x = self.chall.x.clone();
 
         let a : Vec<Scalar> = (0..=m).fold(
             vec![Scalar::zero(); n],
@@ -170,8 +173,7 @@ impl ZeroProver {
 
         assert!((proof.c_D[m+1] - self.com_ref.commit(vec![Scalar::zero()], Scalar::zero())).is_identity());
 
-        let x = proof.x;//trans.challenge_scalar(b"x");
-        println!("{:#?}", x);
+        let x = self.chall.x.clone();//trans.challenge_scalar(b"x");
         let x_pow: Vec<Scalar> = (0..=m).map(|i| x.pow((i) as u64)).collect();
 
         /// proof of commitments to A
@@ -271,8 +273,8 @@ fn test_base() {
     let mut prover_transcript = Transcript::new(b"testZeroProof");
 
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 13;
-    let n: usize = 4;
+    let m: usize = 4;
+    let n: usize = 13;
     let mut com_ref = CommonRef::new((n*m) as u64, rng);
     let a: Vec<Vec<Scalar>> = vec![vec![Scalar::zero(); m]; n];
     let r: Vec<Scalar> = vec![com_ref.rand_scalar(); m];

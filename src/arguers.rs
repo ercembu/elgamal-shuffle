@@ -112,10 +112,10 @@ impl CommonRef {
         &mut self,
         M: &[Scalar],
         R: &[Scalar],
-    ) -> Ciphertext {
-        let m_prod = M.iter().copied().reduce(|s1, s2| (s1 * s2)).unwrap();
-        let r_prod = R.iter().copied().reduce(|s1, s2| (s1 * s2)).unwrap();
-        self.pk.exp_encrypt_with(m_prod, r_prod) 
+    ) -> Vec<Ciphertext> {
+        (0..M.len()).map(|i|
+                         self.pk.exp_encrypt_with(M[i].clone(), R[i].clone())
+                         ).collect()
     }
 
     pub fn decrypt(

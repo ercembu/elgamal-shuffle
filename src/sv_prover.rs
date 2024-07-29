@@ -13,6 +13,7 @@ use crate::errors::ProofError;
 use crate::traits::{Hadamard, EGMult, InnerProduct, Multiplicat,
                     Addition};
 use crate::mat_traits::MatTraits;
+use crate::utils::Challenges;
 
 #[derive(Clone)]
 pub(crate) struct SVProof {
@@ -33,6 +34,7 @@ pub struct SVProver {
     b: Scalar,
     r: Scalar,
     com_ref: CommonRef,
+    pub(crate) chall: Challenges
 }
 
 impl SVProver {
@@ -49,6 +51,7 @@ impl SVProver {
             b: b,
             r: r,
             com_ref: com_ref,
+            chall: Challenges{x:Scalar::one(), y:Scalar::one(), z:Scalar::one()},
         }
     }
 
@@ -97,7 +100,7 @@ impl SVProver {
                                                 ).collect();
         let c_del = self.com_ref.commit(open_delta, s_x.clone());
 
-        let x = trans.challenge_scalar(b"x");
+        let x = self.chall.x.clone();
 
         let a_vec: Vec<Scalar> = (0..n).map(|i|
                                             self.a_vec[i] * x.clone() 
@@ -179,7 +182,6 @@ fn test_sv_hiding_a() {
                                     ).collect();
 
     let r_: Scalar = x.clone() * r + r_d;
-    println!("{:#?}", r);
 
     assert!(c_a*x + c_d == com_ref.commit(a_vec.clone(), r_.clone()));
 

@@ -13,6 +13,7 @@ use crate::errors::ProofError;
 use crate::traits::{Hadamard, EGMult, InnerProduct, Multiplicat,
                     Addition};
 use crate::mat_traits::MatTraits;
+use crate::utils::Challenges;
 
 use crate::zero_prover::{ZeroProof, ZeroProver};
 
@@ -34,6 +35,8 @@ pub struct HadamProver {
     b: Vec<Scalar>,
     s: Scalar,
     com_ref: CommonRef,
+    /// Challenges from oracle, purely random
+    pub(crate) chall: Challenges
 }
 
 impl HadamProver {
@@ -54,6 +57,7 @@ impl HadamProver {
             b: b,
             r: r,
             com_ref: com_ref,
+            chall: Challenges{x:Scalar::one(), y:Scalar::one(), z:Scalar::one()},
         }
     }
 
@@ -109,8 +113,8 @@ impl HadamProver {
             }
         ).collect();
 
-        let x = trans.challenge_scalar(b"x");
-        let y = trans.challenge_scalar(b"y");
+        let x = self.chall.x.clone();
+        let y = self.chall.y.clone();
 
         let x_pow: Vec<Scalar> = (0..c_B.len()).map(|i| x.pow((i+1) as u64)).collect();
         let c_Di: Vec<RistrettoPoint> = (0..c_B.len()-1).map(
@@ -156,6 +160,7 @@ impl HadamProver {
             [D.clone().as_slice(), &[d]].concat(),
             [t_.clone().as_slice(), &[t]].concat(),
             self.com_ref.clone());
+        zero_prover.chall = self.chall.clone();
 
         let zero_proof: ZeroProof = zero_prover.prove(trans);
         
@@ -192,7 +197,7 @@ fn test_base() {
     let mut prover_transcript = Transcript::new(b"testHadamProof");
 
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 4;
+    let m: usize = 6;
     let n: usize = 4;
     let mut com_ref = CommonRef::new((m*n) as u64, rng);
     let a: Vec<Vec<Scalar>> = vec![vec![com_ref.rand_scalar(); m]; n];

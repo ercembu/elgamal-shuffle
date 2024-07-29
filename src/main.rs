@@ -32,9 +32,9 @@ mod utils;
 
 
 fn main() {
-    let m: u64 = 4;
-    let n: u64 = 4;
-    let mu: u64 = 2;
+    let m: usize = 4;
+    let n: usize = 4;
+    let mu: usize = 2;
 
     let N = m * n;
 
@@ -43,7 +43,7 @@ fn main() {
     //Setup rng and common reference key(public key for ElGamal,
     // commitment key for Pedersen)
     let mut rng = StdRng::from_entropy();
-    let mut cr = arguers::CommonRef::new(N, rng);
+    let mut cr = arguers::CommonRef::new(N as u64, rng);
 
     let deck: Vec<Scalar> = (0..N).map(|card| Scalar::from(card as u64))
                                     .collect();
@@ -56,7 +56,7 @@ fn main() {
                                                 )
                                             .collect();
 
-    let permutation: Vec<u64> = cr.rand_perm(&(1..=N).collect());
+    let permutation: Vec<u64> = cr.rand_perm(&(1..=(N as u64)).collect());
 
     let rho: Vec<Scalar> = (0..N).map(|_| cr.rand_scalar()).collect();
 

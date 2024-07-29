@@ -9,3 +9,11 @@ pub mod cipher {
         [tuple.0.compress().as_bytes().as_slice(), tuple.1.compress().as_bytes().as_slice()].concat()
     }
 }
+
+use rust_elgamal::{Scalar};
+#[derive(Clone)]
+pub struct Challenges {
+    pub x: Scalar,
+    pub y: Scalar,
+    pub z: Scalar,
+}
