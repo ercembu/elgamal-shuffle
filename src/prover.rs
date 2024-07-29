@@ -121,7 +121,7 @@ impl ShuffleProver {
                                                            .collect::<Vec<Scalar>>()
                                                             ).collect();
         let mut mexp_prover = MexpProver::new(C_mat, C_x, c_b.clone(), b_mat, s.clone(), rho_, self.com_ref.clone());
-        let mexp_proof = mexp_prover.prove(trans, x.clone());
+        let mexp_proof = MexpProof::default(); //mexp_prover.prove(trans, x.clone());
 
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
@@ -132,7 +132,7 @@ impl ShuffleProver {
         self.chall.z = z.clone();
 
         let _z: Vec<Scalar> = (0..self.pi.len()).map(|_| -z.clone()).collect();
-        let zeros: Vec<Scalar> = (0..self.pi.len()).map(|_| Scalar::zero()).collect();
+        let zeros: Vec<Scalar> = (0..self.m).map(|_| Scalar::zero()).collect();
         let c_z: Vec<RistrettoPoint> = self.com_ref.commit_vec(_z.clone(), zeros);
 
         let c_d: Vec<RistrettoPoint> = c_a.iter()
@@ -160,11 +160,10 @@ impl ShuffleProver {
             .map(|(d_, z_)| d_ + z_)
             .collect();
         let mut d_z_iter = d_z.clone().into_iter();
-        let d_z: Vec<Vec<Scalar>> = (0..self.n).map(|_| 
-                                                (0..self.m).map(|_| d_z_iter.next().unwrap()).collect::<Vec<Scalar>>()
+        let d_z: Vec<Vec<Scalar>> = (0..self.m).map(|_| 
+                                                (0..self.n).map(|_| d_z_iter.next().unwrap()).collect::<Vec<Scalar>>()
                                                 )
             .collect();
-        let d_z = d_z.to_col();
         //(yi + x^i − z)
 
         let product: Scalar = (1..=self.m * self.n).fold(
@@ -272,11 +271,10 @@ fn test_prover_product() {
 
     let c_b: Vec<RistrettoPoint> = cr.commit_vec(b.clone(), s.clone());
     let y = cr.rand_scalar();
-    //TODO: PROBLEM IS THIS FUCKER
-    let z = Scalar::zero();
+    let z = cr.rand_scalar();
 
     let _z: Vec<Scalar> = (0..pi.len()).map(|_| -z.clone()).collect();
-    let zeros: Vec<Scalar> = (0..pi.len()).map(|_| Scalar::zero()).collect();
+    let zeros: Vec<Scalar> = (0..m).map(|_| Scalar::zero()).collect();
     let c_z: Vec<RistrettoPoint> = cr.commit_vec(_z.clone(), zeros);
     println!("{}", c_z.len());
 
@@ -339,7 +337,7 @@ fn test_prover() {
     use crate::EGInp;
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 4;
+    let m: usize = 8;
     let n: usize = 4;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);

@@ -14,7 +14,7 @@ use bulletproofs::ProofError;
 
 use crate::traits::{EGMult, InnerProduct, Addition, Multiplicat};
 use crate::mat_traits::MatTraits;
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct MexpProof {
     pub(crate) c_A0: RistrettoPoint,
     pub(crate) c_Bk: Vec<RistrettoPoint>,

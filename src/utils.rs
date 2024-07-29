@@ -11,7 +11,7 @@ pub mod cipher {
 }
 
 use rust_elgamal::{Scalar};
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Challenges {
     pub x: Scalar,
     pub y: Scalar,
