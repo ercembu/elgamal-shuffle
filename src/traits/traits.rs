@@ -1,7 +1,7 @@
 use std::vec::Vec;
 use std::borrow::Borrow;
 
-use crate::vec_utils::VecUtil;
+use crate::utils::vec_utils::VecUtil;
 
 use rust_elgamal::{Scalar, Ciphertext};
 

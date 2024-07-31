@@ -7,15 +7,20 @@ use curve25519_dalek::traits::MultiscalarMul;
 use merlin::Transcript;
 
 use crate::arguers::CommonRef;
-use crate::transcript::TranscriptProtocol;
-use crate::errors::ProofError;
 
-use crate::traits::{Hadamard, EGMult, InnerProduct, Multiplicat,
-                    Addition};
-use crate::mat_traits::MatTraits;
-use crate::utils::Challenges;
+use crate::traits::{traits::{Hadamard, 
+                                EGMult, 
+                                InnerProduct, 
+                                Multiplicat,
+                                Addition
+                            }, 
+                    mat_traits::MatTraits};
 
-use crate::zero_prover::{ZeroProof, ZeroProver};
+use crate::utils::{utils::Challenges,
+                    transcript::TranscriptProtocol,
+                    errors::ProofError};
+
+use crate::provers::zero_prover::{ZeroProof, ZeroProver};
 
 #[derive(Clone)]
 pub struct HadamProof{

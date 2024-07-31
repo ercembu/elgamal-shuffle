@@ -2,7 +2,7 @@ use curve25519_dalek::ristretto::CompressedRistretto;
 use rust_elgamal::{Scalar, Ciphertext};
 use merlin::Transcript;
 
-use crate::utils::cipher;
+use crate::utils::utils::cipher;
 
 use bulletproofs::ProofError;
 

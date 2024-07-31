@@ -3,7 +3,7 @@ use std::borrow::Borrow;
 
 use rust_elgamal::{Scalar};
 
-use crate::traits::{Hadamard, InnerProduct, Addition, Multiplicat};
+use crate::traits::traits::{Hadamard, InnerProduct, Addition, Multiplicat};
 
 impl Hadamard for Vec<Scalar> {
     type Msg = Scalar;

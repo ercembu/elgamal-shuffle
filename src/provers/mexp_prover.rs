@@ -7,14 +7,19 @@ use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
 use merlin::Transcript;
 
 use crate::arguers::CommonRef;
-use crate::transcript::TranscriptProtocol;
+use crate::traits::{traits::{Hadamard, 
+                                EGMult, 
+                                InnerProduct, 
+                                Multiplicat,
+                                Addition
+                            }, 
+                    mat_traits::MatTraits};
 
-use crate::enums::EGInp;
-use crate::utils::Challenges;
-use bulletproofs::ProofError;
+use crate::utils::{utils::Challenges,
+                    transcript::TranscriptProtocol,
+                    errors::ProofError,
+                    enums::EGInp};
 
-use crate::traits::{EGMult, InnerProduct, Addition, Multiplicat};
-use crate::mat_traits::MatTraits;
 #[derive(Clone, Default)]
 pub struct MexpProof {
     pub(crate) c_A0: RistrettoPoint,
@@ -25,6 +30,15 @@ pub struct MexpProof {
     pub(crate) b   : Scalar,
     pub(crate) s   : Scalar,
     pub(crate) tau : Scalar,
+}
+#[derive(Clone)]
+pub struct MexpOptimProof {
+    pub(crate) c_b: Vec<RistrettoPoint>,
+    pub(crate) E_k: Vec<Ciphertext>,
+    pub(crate) b: Scalar,
+    pub(crate) s: Scalar,
+    pub(crate) open_C: Ciphertext,
+    pub(crate) C_: Ciphertext,
 }
 ///Prover struct for Multi-Expo Argument
 #[derive(Clone)]
@@ -221,6 +235,149 @@ impl MexpProver {
 
         Ok(())
     }
+    pub(crate) fn prove_optim(
+        &mut self,
+        trans: &mut Transcript,
+        x: Scalar,
+        mu: usize,
+    ) -> MexpOptimProof {
+        let (m, n) = self.C_mat.size();
+        let m_: usize = m / mu;
+
+        trans.mexp_domain_sep(m.clone() as u64, (m/2).try_into().unwrap());
+
+        let mut b_: Vec<Scalar> = vec![self.com_ref.rand_scalar(); 2*mu -1];
+        let mut s_: Vec<Scalar> = vec![self.com_ref.rand_scalar(); 2*mu -1];
+        let mut tau_: Vec<Scalar> = vec![self.com_ref.rand_scalar(); 2*mu -1];
+
+        b_[mu-1] = Scalar::zero();
+        s_[mu-1] = Scalar::zero();
+        tau_[mu-1] = self.rho.clone();
+
+        //Commitments to b vector
+        let c_bk: Vec<RistrettoPoint> = (0..=2*mu -2).map(|k|
+                                                          self.com_ref.commit(vec![b_[k].clone()], s_[k].clone())
+                                                          ).collect();
+        let mut Gbk: Vec<Ciphertext> = b_.iter()
+                                        .zip(tau_.iter())
+                                        .map(|(_b, _tau)| {
+                                            self.com_ref.encrypt(&EGInp::Scal(*_b) 
+                                                                  ,_tau)
+                                        }).collect();
+
+        for i in 1..=mu {
+            for j in 1..=mu {
+                let k = j + mu - 1 - i ;
+                Gbk[k] = (0..=m_ - 1).fold(Gbk[k].clone(),
+                                            |acc, l|
+                                                acc + self.C_mat[mu * l + i - 1].as_slice()
+                                                                .pow(self.A[mu * l + j - 1].as_slice())
+                                           );
+            }
+        }
+
+        let E_k = Gbk;
+        
+
+
+        let x_: Vec<Scalar> = (0..=2*mu -2).map(|exp| x.pow(exp.try_into().unwrap())).collect();
+
+        let b: Scalar = b_.dot(&x_.clone());
+        let s: Scalar = s_.dot(&x_.clone());
+
+        let mut a_: Vec<Vec<Scalar>> = vec![];
+        let mut r_: Vec<Scalar> = vec![];
+        let rho_: Scalar = tau_.dot(&x_.clone());
+
+        for l in 1..=m_ {
+            a_.push((1..=mu).fold(vec![Scalar::zero(); self.A[0].len()],
+                                    |acc, j|
+                                    acc.add(&self.A[mu * (l - 1) + j - 1]
+                                                            .mult(&x.pow((j-1) as u64))
+                                            )
+                                    ));
+            r_.push((1..=mu).fold(Scalar::zero(),
+                                    |acc, j|
+                                    acc + (&self.r[mu * (l - 1) + j - 1]
+                                                            * x.pow((j-1) as u64)
+                                            )
+                                    ));
+        }
+
+        let mut C_l: Vec<Vec<Ciphertext>> = vec![];
+        let mut c_A_prime: Vec<RistrettoPoint> = vec![];
+
+        let G_b: Ciphertext = self.com_ref.encrypt(&EGInp::Scal(-b.clone()) 
+                                                              ,&Scalar::zero()
+                                                  );
+        let E_x: Ciphertext = E_k.clone().as_slice().pow(x_.clone().as_slice());
+
+        let C_prime: Ciphertext = G_b + E_x;
+
+
+        for l in 1..=m_ {
+            C_l.push(
+                (1..mu).fold(self.C_mat[mu*l -1].clone(),
+                    |acc, i| {
+                        let rhs: Vec<Ciphertext> = self.C_mat[mu*(l - 1) + i - 1]
+                            .iter()
+                            .zip(acc.iter())
+                            .map(|(c, a)| a + c * x.pow((mu - i) as u64))
+                            .collect();
+                        rhs
+                    })
+                );
+            c_A_prime.push(
+                (2..=mu).fold(self.c_A[mu*l -1].clone(),
+                    |acc, j| {
+                        let rhs: RistrettoPoint = self.c_A[mu*(l - 1) + j - 1]
+                            * x.pow((j-1) as u64);
+                        acc + rhs
+                    })
+                );
+        }
+        let base: Ciphertext = self.com_ref.encrypt(&EGInp::Scal(Scalar::zero()) 
+                                                              ,&rho_.clone()
+                                                  );
+
+        let open_C: Ciphertext = C_l.iter()
+            .zip(a_.iter())
+            .fold(base, 
+                  |acc, (c, a)| acc + c.as_slice().pow(a.as_slice())
+                  );
+
+        self.chall.x = x.clone();
+        MexpOptimProof {
+            c_b: c_bk,
+            E_k: E_k,
+            b: b,
+            s: s,
+            open_C: open_C,
+            C_: C_prime,
+        }
+    }
+    pub fn verify_optim(
+        &mut self,
+        proof: MexpOptimProof,
+        trans: &mut Transcript,
+        mu: usize,
+    ) -> Result<(), ProofError> {
+        assert!(proof.c_b[mu-1] == self.com_ref.commit(vec![Scalar::zero()],
+                                                        Scalar::zero())
+                );
+
+        assert!(proof.E_k[mu-1] == self.C);
+
+        let x = self.chall.x.clone();
+        let x_: Vec<Scalar> = (0..=2*mu -2).map(|exp| x.pow(exp.try_into().unwrap())).collect();
+        let commit_b: RistrettoPoint = proof.c_b.iter()
+            .zip(x_.iter())
+            .map(|(b_, x_)| b_ * x_).sum();
+        assert!(commit_b == self.com_ref.commit(vec![proof.b], proof.s));
+
+        assert!(proof.C_ == proof.open_C);
+        Ok(())
+    }
 }
 
 #[test]
@@ -228,11 +385,12 @@ fn test_mexp_base() {
     use super::*;
     use rand::rngs::StdRng;
     use rand::SeedableRng;
-    use crate::EGInp;
+    use crate::utils::enums::EGInp;
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 6;
     let n: usize = 4;
+    let mu: usize = m / 2;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
 
@@ -279,5 +437,65 @@ fn test_mexp_base() {
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
 
     assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
+
+}
+#[test]
+fn test_mexp_optim() {
+    use super::*;
+    use rand::rngs::StdRng;
+    use rand::SeedableRng;
+    use crate::utils::enums::EGInp;
+    
+    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
+    let m: usize = 15;
+    let n: usize = 30;
+    let mu: usize = m / 3;
+
+    let mut cr = CommonRef::new((m*n) as u64, rng);
+
+    let deck: Vec<Scalar> = (0..(m*n)).map(|card| Scalar::from(card as u64))
+                                    .collect();
+    let deck_r: Vec<Scalar> = (0..(m*n)).map(|_| cr.rand_scalar()).collect();
+    let C_deck: Vec<Ciphertext> = deck.iter()
+                                        .zip(deck_r.clone())
+                                        .map(|(card, r)| cr.encrypt(&EGInp::Scal(card.clone()), 
+                                                                    &r
+                                                        )
+                                        )
+                                    .collect();
+    let mut c_iter = C_deck.clone().into_iter();
+    let C_mat: Vec<Vec<Ciphertext>> = (0..m).map(|_| (0..n).map(|_| c_iter.next().unwrap()).collect::<Vec<Ciphertext>>()).collect();
+
+    let A: Vec<Vec<Scalar>> = vec![vec![cr.rand_scalar(); m];n];
+    let r: Vec<Scalar> = vec![cr.rand_scalar(); m];
+
+    let c_A = cr.commit_mat(A.clone(), r.clone());
+
+    let A = A.to_col();
+
+    let rho: Scalar = cr.rand_scalar();
+    let base: Ciphertext = cr.encrypt(&EGInp::Scal(Scalar::zero()), &rho);
+
+    let C: Ciphertext = (0..m).fold(base.clone(), |acc, i| acc + 
+                                                    (&C_mat[i][..]).pow(&A[i][..])
+                                                    );
+
+    let mut mexp_prover = MexpProver::new(
+            C_mat,
+            C,
+            c_A,
+            A,
+            r,
+            rho,
+            cr.clone()
+        );
+
+    let x: Scalar = cr.rand_scalar();
+    let mut prover_transcript = Transcript::new(b"testMexpProof");
+    let mexp_proof = mexp_prover.prove_optim(&mut prover_transcript, x.clone(),
+                                                mu);
+    let mut verifier_transcript = Transcript::new(b"testMexpProof");
+
+    assert!(mexp_prover.verify_optim(mexp_proof, &mut verifier_transcript, mu).is_ok());
 
 }

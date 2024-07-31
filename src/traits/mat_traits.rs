@@ -2,7 +2,7 @@ use std::ops::Index;
 use len_trait::len::*;
 
 use rust_elgamal::{Scalar};
-use crate::traits::{Addition, Multiplicat};
+use crate::traits::traits::{Addition, Multiplicat};
 
 pub trait MatTraits<I, Idx=usize>
 where

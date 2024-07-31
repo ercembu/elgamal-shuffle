@@ -1,0 +1,137 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{listings} % For code listings
+\usepackage{color}
+
+\geometry{margin=1in}
+\setstretch{1.5}
+
+% Custom commands
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+
+% Title page
+\title{
+    \HRule \\[0.4cm]
+    {\huge \bfseries Title of Your Thesis \\[0.4cm]}
+    \HRule \\[1.5cm]
+    \textsc{\Large Master's Thesis}\\[0.5cm]
+    \textsc{\large University of }\\[0.5cm]
+}
+
+\author{
+    \Large Your Name\\
+    \Large Student Number: 12345678\\
+    \Large Supervisor: Prof. Name
+}
+
+\date{Month, Year}
+
+\begin{document}
+
+% Title page
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% Abstract
+\pagenumbering{roman}
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+Your abstract here.
+
+\newpage
+
+% Acknowledgements
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+Your acknowledgements here.
+
+\newpage
+
+% Table of Contents
+\tableofcontents
+
+% List of Figures
+\newpage
+\listoffigures
+
+% List of Tables
+\newpage
+\listoftables
+
+% Main content
+\newpage
+\pagenumbering{arabic}
+
+\chapter{Introduction}
+\section{Background}
+Your background here.
+
+\section{Problem Statement}
+Your problem statement here.
+
+\section{Objectives}
+Your research objectives here.
+
+\section{Thesis Structure}
+Your thesis structure here.
+
+\chapter{Former Literature}
+\section{Related Work}
+Your related work here.
+
+\section{Existing Solutions}
+Your discussion on existing solutions here.
+
+\chapter{Methodology}
+\section{Research Design}
+Your research design here.
+
+\section{Data Collection}
+Your data collection methods here.
+
+\section{Data Analysis}
+Your data analysis methods here.
+
+\chapter{Implementation}
+\section{System Design}
+Your system design here.
+
+\section{Implementation Details}
+Your implementation details here.
+
+\chapter{Results}
+Your results here.
+
+\chapter{Discussion}
+\section{Analysis of Results}
+Your analysis of the results here.
+
+\section{Implications}
+Your discussion on implications here.
+
+\chapter{Conclusion and Future Work}
+\section{Conclusion}
+Your conclusion here.
+
+\section{Future Work}
+Your suggestions for future work here.
+
+% References
+\newpage
+\addcontentsline{toc}{chapter}{References}
+\bibliographystyle{plain}
+\bibliography{yourbibfile}
+
+% Appendix
+\appendix
+\chapter{Appendix A}
+Your appendix content here.
+
+\end{document}
+

@@ -5,16 +5,23 @@ use curve25519_dalek::ristretto::{RistrettoPoint, CompressedRistretto};
 use merlin::Transcript;
 
 use crate::arguers::CommonRef;
-use crate::transcript::TranscriptProtocol;
 
-use crate::traits::{EGMult, InnerProduct};
-use crate::mat_traits::MatTraits;
 use crate::vec_utils::VecUtil::scalar_to_str;
 
-use bulletproofs::ProofError;
-use crate::mexp_prover::{MexpProver, MexpProof};
-use crate::prod_prover::{ProdProver, ProdProof};
-use crate::utils::Challenges;
+use crate::provers::{mexp_prover::{MexpProof, MexpProver},
+                        prod_prover::{ProdProof, ProdProver}};
+
+use crate::traits::{traits::{Hadamard, 
+                                EGMult, 
+                                InnerProduct, 
+                                Multiplicat,
+                                Addition
+                            }, 
+                    mat_traits::MatTraits};
+
+use crate::utils::{utils::Challenges,
+                    transcript::TranscriptProtocol,
+                    errors::ProofError};
 
 #[derive(Clone)]
 pub struct ShuffleProof {
@@ -198,10 +205,6 @@ impl ShuffleProver {
         mut proof: ShuffleProof,
     ) -> Result<(), ProofError> {
         trans.shuffle_domain_sep(self.n as u64, self.m as u64);
-
-        trans.val_append_point_vec(b"c_A", &proof.c_A.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>())?;
-
-        trans.val_append_point_vec(b"c_B", &proof.c_B.iter().map(|point| point.compress()).collect::<Vec<CompressedRistretto>>())?;
 
         let mexp_proof = proof.mexp;
         let mut mexp_prover = proof.mexp_prover;

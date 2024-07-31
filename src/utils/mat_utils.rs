@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 use rust_elgamal::{Scalar};
-use crate::vec_utils::VecUtil;
+use crate::utils::vec_utils::VecUtil;
 
 pub mod MatUtil {
     use super::*;

@@ -5,14 +5,20 @@ use curve25519_dalek::ristretto::RistrettoPoint;
 use merlin::Transcript;
 
 use crate::arguers::CommonRef;
-use crate::transcript::TranscriptProtocol;
-use crate::hadamard_prover::{HadamProof, HadamProver};
-use crate::sv_prover::{SVProof, SVProver};
-use crate::errors::ProofError;
-use crate::utils::Challenges;
+use crate::provers::{hadamard_prover::{HadamProof, HadamProver},
+                        sv_prover::{SVProof, SVProver}};
 
-use crate::traits::{EGMult, InnerProduct};
-use crate::mat_traits::MatTraits;
+use crate::traits::{traits::{Hadamard, 
+                                EGMult, 
+                                InnerProduct, 
+                                Multiplicat,
+                                Addition
+                            }, 
+                    mat_traits::MatTraits};
+
+use crate::utils::{utils::Challenges,
+                    transcript::TranscriptProtocol,
+                    errors::ProofError};
 #[derive(Clone)]
 pub struct ProdProof {
     pub(crate) c_b: RistrettoPoint,
