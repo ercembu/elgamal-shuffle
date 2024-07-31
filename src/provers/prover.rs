@@ -8,7 +8,7 @@ use crate::arguers::CommonRef;
 
 use crate::vec_utils::VecUtil::scalar_to_str;
 
-use crate::provers::{mexp_prover::{MexpProof, MexpProver},
+use crate::provers::{mexp_prover::{MexpProof, MexpOptimProof, MexpProver},
                         prod_prover::{ProdProof, ProdProver}};
 
 use crate::traits::{traits::{Hadamard, 
@@ -27,7 +27,7 @@ use crate::utils::{utils::Challenges,
 pub struct ShuffleProof {
     pub(crate) c_A : Vec<RistrettoPoint>,
     pub(crate) c_B : Vec<RistrettoPoint>,
-    pub(crate) mexp: MexpProof,
+    pub(crate) mexp: MexpOptimProof,
     pub(crate) mexp_prover: MexpProver,
     pub(crate) prod: ProdProof,
     pub(crate) prod_prover: ProdProver,
@@ -115,7 +115,7 @@ impl ShuffleProver {
         //Multi-Expo Argument
         let rho_: Scalar = -self.rho.dot(&b);
         let x_: Vec<Scalar> = (1..=self.m*self.n).map(|e| x.pow(e as u64)).collect();
-        //TODO: check correctness here
+
         let C_x: Ciphertext = self.c_deck.as_slice().pow(x_.as_slice());
         assert!(self.cp_deck.len() == (self.m * self.n) as usize);
         let mut cp_iter = self.cp_deck.clone().into_iter();
@@ -128,7 +128,7 @@ impl ShuffleProver {
                                                            .collect::<Vec<Scalar>>()
                                                             ).collect();
         let mut mexp_prover = MexpProver::new(C_mat, C_x, c_b.clone(), b_mat, s.clone(), rho_, self.com_ref.clone());
-        let mexp_proof = mexp_prover.prove(trans, x.clone());
+        let mexp_proof = mexp_prover.prove_optim(trans, x.clone(), self.mu);
 
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
@@ -208,7 +208,7 @@ impl ShuffleProver {
 
         let mexp_proof = proof.mexp;
         let mut mexp_prover = proof.mexp_prover;
-        mexp_prover.verify(mexp_proof, trans)?;
+        mexp_prover.verify_optim(mexp_proof, trans, self.mu)?;
         let mut prod_prover = proof.prod_prover;
         assert!(prod_prover.verify(trans, proof.prod).is_ok());
 
@@ -342,6 +342,8 @@ fn test_prover() {
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 8;
     let n: usize = 4;
+    
+    let mu: usize = m / 2; 
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
     let deck: Vec<Scalar> = (0..(m*n)).map(|card| Scalar::from(card as u64))
@@ -376,7 +378,7 @@ fn test_prover() {
     let mut shuffle_prover = ShuffleProver::new(
                             m,
                             n,
-                            m * n,
+                            mu,
                             C_deck,
                             C_prime,
                             pi,

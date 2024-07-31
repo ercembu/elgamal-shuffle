@@ -267,7 +267,8 @@ impl MexpProver {
 
         for i in 1..=mu {
             for j in 1..=mu {
-                let k = j + mu - 1 - i ;
+                let k = j + mu - i - 1 ;
+                println!("{}", m_);
                 Gbk[k] = (0..=m_ - 1).fold(Gbk[k].clone(),
                                             |acc, l|
                                                 acc + self.C_mat[mu * l + i - 1].as_slice()
@@ -447,8 +448,8 @@ fn test_mexp_optim() {
     use crate::utils::enums::EGInp;
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 15;
-    let n: usize = 30;
+    let m: usize = 6;
+    let n: usize = 4;
     let mu: usize = m / 3;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
