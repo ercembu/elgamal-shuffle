@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.7.31)  31 JUL 2024 16:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.7.31)  31 JUL 2024 17:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**thesis.tex
-(./thesis.tex
+**/home/erd/elgamal-shuffle/thesis/thesis.tex
+(/home/erd/elgamal-shuffle/thesis/thesis.tex
 LaTeX2e <2021-11-15> patch level 1
 L3 programming layer <2022-01-21>
 (/usr/share/texlive/texmf-dist/tex/latex/base/report.cls
@@ -325,7 +325,7 @@ File: l3backend-pdftex.def 2022-01-12 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count293
 \l__pdf_internal_box=\box54
 )
-No file thesis.aux.
+(/home/erd/elgamal-shuffle/thesis/thesis.aux)
 \openout1 = `thesis.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
@@ -346,6 +346,7 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 34.
 LaTeX Font Info:    ... okay on input line 34.
 LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 34.
 LaTeX Font Info:    ... okay on input line 34.
+
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count294
@@ -417,6 +418,9 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 34.
 LaTeX Info: Redefining \pageref on input line 34.
 LaTeX Info: Redefining \nameref on input line 34.
+
+(/home/erd/elgamal-shuffle/thesis/thesis.out)
+(/home/erd/elgamal-shuffle/thesis/thesis.out)
 \@outlinefile=\write3
 \openout3 = `thesis.out'.
 
@@ -439,22 +443,25 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ] [2
 
 ]
+(/home/erd/elgamal-shuffle/thesis/thesis.toc [3
+
+])
 \tf@toc=\write4
 \openout4 = `thesis.toc'.
 
- [3
-
-]
+ [4]
+(/home/erd/elgamal-shuffle/thesis/thesis.lof)
 \tf@lof=\write5
 \openout5 = `thesis.lof'.
 
- [4
+ [5
 
 ]
+(/home/erd/elgamal-shuffle/thesis/thesis.lot)
 \tf@lot=\write6
 \openout6 = `thesis.lot'.
 
- [5
+ [6
 
 ]
 Chapter 1.
@@ -494,32 +501,27 @@ No file thesis.bbl.
 Appendix A.
 [8
 
-] (./thesis.aux)
-
-Package rerunfilecheck Warning: File `thesis.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `thesis.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  2A2EA190D4609AD2F2E0512B1F88D828;3126.
+] (/home/erd/elgamal-shuffle/thesis/thesis.aux)
+Package rerunfilecheck Info: File `thesis.out' has not changed.
+(rerunfilecheck)             Checksum: 2A2EA190D4609AD2F2E0512B1F88D828;3126.
  ) 
 Here is how much of TeX's memory you used:
- 11495 strings out of 480247
- 175814 string characters out of 5896151
- 460348 words of memory out of 5000000
- 29268 multiletter control sequences out of 15000+600000
- 474570 words of font info for 48 fonts, out of 8000000 for 9000
+ 11560 strings out of 480247
+ 177145 string characters out of 5896151
+ 465594 words of memory out of 5000000
+ 29312 multiletter control sequences out of 15000+600000
+ 479224 words of font info for 66 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,7n,63p,235b,347s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 60i,7n,63p,268b,386s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/sha
 re/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-Output written on thesis.pdf (14 pages, 63211 bytes).
+Output written on /home/erd/elgamal-shuffle/thesis/thesis.pdf (15 pages, 69367 
+bytes).
 PDF statistics:
- 124 PDF objects out of 1000 (max. 8388607)
- 99 compressed objects within 1 object stream
- 42 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 236 PDF objects out of 1000 (max. 8388607)
+ 208 compressed objects within 3 object streams
+ 43 named destinations out of 1000 (max. 500000)
+ 209 words of extra memory for PDF output out of 10000 (max. 10000000)
 
