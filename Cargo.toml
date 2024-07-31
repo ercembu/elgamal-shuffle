@@ -11,20 +11,6 @@ repository = "https://github.com/ercembu/elgamal-shuffle"
 categories = ["cryptography"]
 keywords = ["cryptography", "zero-knowledge", "ristretto", "shuffle", "ElGamal"]
 description = "A pure-Rust implementation of ZK Correctness of a Shuffle for ElGamal"
-[dependencies]
-# simd_backend extends u64_backend
-curve25519-dalek = { package = "curve25519-dalek-ng", version = "4", default-features = false, features = ["alloc", "u64_backend"] }
-rust-elgamal = {version="0.4.0", default-features = true}
-merlin = {version="*" }
-rand = {version = "*"}
-itertools = {version="*"}
-serde = { version = "1", default_features = false, features = ["derive"], optional = true }
-rand_core = { version = "0.6", default-features = false }
-bulletproofs = {version= "*", default-features=false}
-ethnum = {version="*"}
-len-trait = {version="*"}
-thiserror = {version="*"}
-
 [features]
 nightly = ["curve25519-dalek/nightly"]
 default = ["std"]
@@ -33,3 +19,16 @@ enable-serde = ["serde", "curve25519-dalek/serde"]
 simd_backend = ["nightly", "curve25519-dalek/simd_backend"]
 std = ["curve25519-dalek/std", "rand_core/std", "serde/std"]
 
+[dependencies]
+# simd_backend extends u64_backend
+curve25519-dalek = { package = "curve25519-dalek-ng", version = "4", default-features = false, features = ["alloc", "u64_backend"] }
+rust-elgamal = {version="0.4.0", default-features = true}
+merlin = {version="*" }
+rand = {version = "*"}
+itertools = {version="*"}
+serde = { version = "1", default-features = false, features = ["derive"], optional = true }
+rand_core = { version = "0.6", default-features = false }
+bulletproofs = {version= "*", default-features=false}
+ethnum = {version="*"}
+len-trait = {version="*"}
+thiserror = {version="*"}
