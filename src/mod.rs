@@ -1,10 +1,4 @@
 pub mod arguers;
 pub mod traits;
-pub mod vec_traits;
-pub mod mat_utils;
-pub mod vec_utils;
-pub mod enums;
-pub mod mat_traits;
-pub mod hadamard_prover;
-pub mod zero_prover;
-pub mod sv_prover;
+pub mod utils;
+pub mod provers;

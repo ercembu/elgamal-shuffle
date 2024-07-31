@@ -14,7 +14,7 @@ use std::iter;
 use curve25519_dalek::ristretto::RistrettoPoint;
 use curve25519_dalek::traits::MultiscalarMul;
 
-use crate::enums::EGInp;
+use crate::utils::enums::EGInp;
 
 #[derive(Clone)]
 pub struct CommonRef {
@@ -145,7 +145,7 @@ impl CommonRef {
 fn test_homo_add() {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
-    use crate::traits::Addition;
+    use crate::traits::traits::Addition;
     let mut rng = StdRng::from_entropy();
     let m: usize = 13;
     let n: usize = 4;
@@ -173,7 +173,7 @@ fn test_homo_add() {
 fn test_homo_exp() {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
-    use crate::traits::Multiplicat;
+    use crate::traits::traits::Multiplicat;
     let mut rng = StdRng::from_entropy();
     let m: usize = 13;
     let n: usize = 4;
