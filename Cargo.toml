@@ -5,6 +5,8 @@ version = "0.1.0"
 edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[toolchain]
+channel = "nightly-2020-07-10"
 
 license = "GPL"
 repository = "https://github.com/ercembu/elgamal-shuffle"
