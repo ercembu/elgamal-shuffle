@@ -21,7 +21,7 @@ std = ["curve25519-dalek/std", "rand_core/std", "serde/std"]
 
 [dependencies]
 # simd_backend extends u64_backend
-curve25519-dalek = { package = "curve25519-dalek-ng", version = "4", default_features = false, features = ["alloc", "u64_backend"] }
+curve25519-dalek = { package = "curve25519-dalek-ng", version = "4", default-features = false, features = ["alloc", "u64_backend"] }
 rust-elgamal = {version="0.4.0", default-features = true}
 merlin = {version="*" }
 rand = {version = "*"}
