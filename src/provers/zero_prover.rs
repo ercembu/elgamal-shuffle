@@ -107,6 +107,7 @@ impl ZeroProver {
         &mut self, 
         trans: &mut Transcript
     ) -> ZeroProof {
+        //Set domain seperator for randomness
         trans.append_message(b"dom-sep", b"ZeroProof");
         let n: usize = self.A[0].len();
         let m: usize = self.A.len();
