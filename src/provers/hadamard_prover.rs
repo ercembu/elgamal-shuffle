@@ -22,29 +22,48 @@ use crate::utils::{utils::Challenges,
 
 use crate::provers::zero_prover::{ZeroProof, ZeroProver};
 
+///Data struct for final proof arguments 
+///to be sent to the verification method
 #[derive(Clone)]
 pub struct HadamProof{
+    ///Commitments to the result : B<sub>i</sub> 
+    ///= Hadamard (A<sub>0</sub>..A<sub>i</sub>)
     c_Bi: Vec<RistrettoPoint>,
+    ///Blinded commitments of c<sub>Bi</sub> 
     c_D: RistrettoPoint,
+    ///Commited `-1` vector value
     c_1: RistrettoPoint,
+    ///Zero Argument Proof
     zero_proof: ZeroProof,
+    ///Zero Argument Prover to be used in verification
     zero_prover: ZeroProver,
 }
 
+///Struct for initial Hadamard Proof Arguments
+///
+///Main objective is to show HadamardSum(A) == b
 #[derive(Clone)]
 pub struct HadamProver {
+    ///Commitments to com<sub>ck</sub>(A, r)
     c_A: Vec<RistrettoPoint>,
+    ///Commitments to com<sub>ck</sub>(b, s)
     c_b: RistrettoPoint,
+    ///Open value matrices, and their blinding factors
+    ///A: Z<sup>nxm</sup>
     A: Vec<Vec<Scalar>>,
+    ///r: Z<sup>m</sup>
     r: Vec<Scalar>,
-    b: Vec<Scalar>,
-    s: Scalar,
+    ///B: Z<sup>nxm</sup>
+    B: Vec<Vec<Scalar>>,
+    ///s: Z<sup>m</sup>
+    s: Vec<Scalar>,
     com_ref: CommonRef,
     /// Challenges from oracle, purely random
     pub(crate) chall: Challenges
 }
 
 impl HadamProver {
+    ///Base Contstructor
     pub fn new(
         c_A: Vec<RistrettoPoint>,
         c_b: RistrettoPoint,
@@ -66,6 +85,9 @@ impl HadamProver {
         }
     }
 
+    ///Bilinear map to be used in the Zero Argument
+    ///
+    ///Essentially a blinded hadamard sum
     pub fn exp_dot(
         a: Vec<Scalar>,
         d: Vec<Scalar>,
@@ -80,6 +102,18 @@ impl HadamProver {
                 )
     }
 
+    ///prove method that creates a HadamardProof
+    ///
+    ///Main method used works over the mathmathical expression
+    ///
+    ///0 = Sum<sub>i=1</sub><sup>m-1</sup>(A<sub>i+1</sub> * 
+    ///d<sub>i</sub> - `1` * d)
+    ///
+    ///where d and d<sub>i</sub> suggest 
+    ///the last and rest of the openings to c<sub>D</sub> 
+    ///
+    ///reduction to a zero argument via 
+    ///blinded products of hadamard sums
     pub fn prove(
         &mut self,
         trans: &mut Transcript,
@@ -177,6 +211,8 @@ impl HadamProver {
             zero_prover: zero_prover,
         }
     }
+    
+    ///verify method that verifies a HadamardProof
     pub fn verify(
         &mut self,
         trans: &mut Transcript,

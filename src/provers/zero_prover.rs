@@ -43,7 +43,7 @@ pub struct ZeroProof {
 
 ///Struct for initial Zero Proof Arguments
 ///
-///Main goal of the arguments is to show bi_map(A, B) == 0
+///Main objective of the arguments is to show bi_map(A, B) == 0
 #[derive(Clone)]
 pub struct ZeroProver {
     ///Commitments to A column vectors
@@ -52,7 +52,7 @@ pub struct ZeroProver {
     ///Commitments to B column vectors
     c_Bi: Vec<RistrettoPoint>,
 
-    ///Bilinear mapping fuction Z^n X Z^n -> Z
+    ///Bilinear mapping fuction Z<sup>n</sup>  X Z<sup>n</sup> -> Z
     ///
     ///In our case it is a weighted dot sum for column vectors
     ///injected from HadamardProver
@@ -61,10 +61,14 @@ pub struct ZeroProver {
     ///Challenge scalar y to be used in the bi_map
     y: Scalar,
 
-    ///Open value matrices, and their hiding factors
+    ///Open value matrices, and their blinding factors
+    ///A: Z<sup>nxm</sup>
     A: Vec<Vec<Scalar>>,
+    ///r: Z<sup>m</sup>
     r: Vec<Scalar>,
+    ///B: Z<sup>nxm</sup>
     B: Vec<Vec<Scalar>>,
+    ///s: Z<sup>m</sup>
     s: Vec<Scalar>,
 
     ///Common reference data
@@ -103,6 +107,13 @@ impl ZeroProver {
 
 
     ///prove method that creates a ZeroProof
+    ///
+    ///Main method utilizes random vectors as blinding factors 
+    ///to the open commitments via just appending the vectors 
+    ///to first and the last index of the matrices
+    ///
+    ///Then during the bilinear mapping the columns are calculated with 1 index difference, which
+    ///could only amount to 0 if the unblinded matrices already amount to 0
     pub fn prove(
         &mut self, 
         trans: &mut Transcript
@@ -116,7 +127,7 @@ impl ZeroProver {
         let a_0: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
         let b_m: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
 
-        let r_0: Scalar = self.com_ref.rand_scalar();;
+        let r_0: Scalar = self.com_ref.rand_scalar();
         let s_m: Scalar = self.com_ref.rand_scalar();
 
         //Commit the blinding vectors

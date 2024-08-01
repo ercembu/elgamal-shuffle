@@ -3,7 +3,11 @@ cargo-features = ["edition2024"]
 name = "elgamal-shuffle"
 version = "0.1.0"
 edition = "2024"
-
+[package.metadata.docs.rs]
+rustdoc-args = [
+    "--html-in-header",
+    ".cargo/registry/src/github.com-1ecc6299db9ec823/katex-doc-0.1.0/katex.html",
+]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 license = "GPL"
@@ -19,6 +23,7 @@ std = ["curve25519-dalek/std", "rand_core/std"]
 
 [dependencies]
 # simd_backend extends u64_backend
+katex-doc = {version="*"}
 curve25519-dalek = { package = "curve25519-dalek-ng", version = "4", default-features = false, features = ["alloc", "u64_backend"] }
 rust-elgamal = {version="0.4.0", default-features = true}
 merlin = {version="*" }
