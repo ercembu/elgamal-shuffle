@@ -372,7 +372,6 @@ fn test_prover() {
              b_ + c_p
              ).collect();
 
-    //let pi: Vec<Scalar> = pi.into_iter().map(|p| Scalar::from(p)).collect();;
 
     let mut prover_transcript = Transcript::new(b"testShuffleProof");
     let mut shuffle_prover = ShuffleProver::new(
