@@ -53,10 +53,10 @@ pub struct HadamProver {
     A: Vec<Vec<Scalar>>,
     ///r: Z<sup>m</sup>
     r: Vec<Scalar>,
-    ///B: Z<sup>nxm</sup>
-    B: Vec<Vec<Scalar>>,
-    ///s: Z<sup>m</sup>
-    s: Vec<Scalar>,
+    ///B: Z<sup>m</sup>
+    b: Vec<Scalar>,
+    ///s: Z
+    s: Scalar,
     com_ref: CommonRef,
     /// Challenges from oracle, purely random
     pub(crate) chall: Challenges
@@ -140,7 +140,7 @@ impl HadamProver {
         let s_vec: Vec<Scalar> = (0..m-2).map(|_| self.com_ref.rand_scalar())
             .collect();
 
-        let s_vec: Vec<Scalar> = iter::once(self.r[0]).chain(s_vec.into_iter())
+        let s_vec: Vec<Scalar> = iter::once(self.r[0].clone()).chain(s_vec.into_iter())
             .chain(iter::once(self.s)).collect();
 
         let c_B: Vec<RistrettoPoint> = (0..B.len()).map(
