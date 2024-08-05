@@ -1,3 +1,7 @@
 #!/usr/bin/bash
 
-pdflatex -output-directory=${PWD}/thesis ${PWD}/thesis/thesis.tex
+cd ${PWD}/thesis
+
+pdflatex thesis
+bibtex thesis
+pdflatex thesis

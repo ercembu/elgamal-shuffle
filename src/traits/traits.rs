@@ -5,6 +5,19 @@ use crate::utils::vec_utils::VecUtil;
 
 use rust_elgamal::{Scalar, Ciphertext};
 
+use std::time::SystemTime;
+
+pub trait Timeable {
+    
+    fn start_time(&self) -> SystemTime {
+        SystemTime::now()
+    }
+
+    fn elapsed(&self, time: SystemTime) -> u128 {
+        time.elapsed().unwrap().as_millis()
+    }
+}
+
 pub trait Hadamard {
     type Msg;
 
@@ -127,5 +140,4 @@ fn test_hadamard() {
     let res: Vec<Scalar> = a.hadamard(&b);
     assert!(res.len() == a.len());
 
-    println!("{}", VecUtil::scalar_to_str(&res));
 }

@@ -8,6 +8,7 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 use crate::traits::{traits::{Hadamard, 
+                                Timeable,
                                 EGMult, 
                                 InnerProduct, 
                                 Multiplicat,
@@ -76,6 +77,9 @@ pub struct ZeroProver {
 
     /// Challenges from oracle, purely random
     pub(crate) chall: Challenges
+}
+
+impl Timeable for ZeroProver {
 }
 
 impl ZeroProver {

@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+use std::mem;
 use rust_elgamal::{Scalar, Ciphertext};
 
 use curve25519_dalek::ristretto::RistrettoPoint;
@@ -11,7 +12,8 @@ use crate::traits::{traits::{Hadamard,
                                 EGMult, 
                                 InnerProduct, 
                                 Multiplicat,
-                                Addition
+                                Addition,
+                                Timeable
                             }, 
                     mat_traits::MatTraits};
 
@@ -66,6 +68,9 @@ pub struct MexpProver {
     com_ref: CommonRef,
 
     chall: Challenges,
+}
+
+impl Timeable for MexpProver {
 }
 
 impl MexpProver {
@@ -194,9 +199,6 @@ impl MexpProver {
     ) -> Result<(), ProofError> {
         let (m, n) = self.C_mat.size();
         trans.mexp_domain_sep(m.clone() as u64, (m/2).try_into().unwrap());
-        //TODO:maybe not needed
-        //trans.val_append_point_vec(b"c_Bk", &proof.c_Bk.iter()
-        //                                .map(|p| p.compress()).collect())?;
 
         assert!(proof.c_Bk[m] == self.com_ref.commit(vec![Scalar::zero()], Scalar::zero()));
         assert!(proof.Ek[m] == self.C);
@@ -268,7 +270,6 @@ impl MexpProver {
         for i in 1..=mu {
             for j in 1..=mu {
                 let k = j + mu - i - 1 ;
-                println!("{}", m_);
                 Gbk[k] = (0..=m_ - 1).fold(Gbk[k].clone(),
                                             |acc, l|
                                                 acc + self.C_mat[mu * l + i - 1].as_slice()
@@ -387,11 +388,13 @@ fn test_mexp_base() {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
     use crate::utils::enums::EGInp;
+    use std::time::SystemTime;
+
+    let now = SystemTime::now();
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 6;
-    let n: usize = 4;
-    let mu: usize = m / 2;
+    let m: usize = 16;
+    let n: usize = 8;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
 
@@ -432,12 +435,26 @@ fn test_mexp_base() {
             cr.clone()
         );
 
+    let now = mexp_prover.start_time();
     let x: Scalar = cr.rand_scalar();
     let mut prover_transcript = Transcript::new(b"testMexpProof");
     let mexp_proof = mexp_prover.prove(&mut prover_transcript, x.clone());
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
 
+    println!("Base Mexp Proof Size: {}", mem::size_of_val(&mexp_prover));
+
     assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
+
+    match now.elapsed() {
+       Ok(elapsed) => {
+           // it prints '2'
+           println!("Base Mexp: {}", elapsed.as_millis());
+       }
+       Err(e) => {
+           // an error occurred!
+           println!("Error: {e:?}");
+       }
+   }
 
 }
 #[test]
@@ -446,11 +463,14 @@ fn test_mexp_optim() {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
     use crate::utils::enums::EGInp;
+    use std::time::SystemTime;
+
+    let now = SystemTime::now();
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 6;
-    let n: usize = 4;
-    let mu: usize = m / 3;
+    let m: usize = 16;
+    let n: usize = 8;
+    let mu: usize = m / 1;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
 
@@ -499,4 +519,12 @@ fn test_mexp_optim() {
 
     assert!(mexp_prover.verify_optim(mexp_proof, &mut verifier_transcript, mu).is_ok());
 
+    match now.elapsed() {
+       Ok(elapsed) => {
+           println!("Optimized, Mexp(mu={}): {}", mu, elapsed.as_millis());
+       }
+       Err(e) => {
+           println!("Error: {e:?}");
+       }
+   }
 }

@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+use std::mem;
+
 use rust_elgamal::{Scalar, Ciphertext};
 use std::iter;
 
@@ -9,6 +11,7 @@ use merlin::Transcript;
 use crate::arguers::CommonRef;
 
 use crate::traits::{traits::{Hadamard, 
+                                Timeable,
                                 EGMult, 
                                 InnerProduct, 
                                 Multiplicat,
@@ -60,6 +63,9 @@ pub struct HadamProver {
     com_ref: CommonRef,
     /// Challenges from oracle, purely random
     pub(crate) chall: Challenges
+}
+
+impl Timeable for HadamProver{
 }
 
 impl HadamProver {
@@ -201,7 +207,12 @@ impl HadamProver {
             self.com_ref.clone());
         zero_prover.chall = self.chall.clone();
 
+        let proof_time = zero_prover.start_time();
         let zero_proof: ZeroProof = zero_prover.prove(trans);
+        println!("\n");
+        println!("Zero Proof Time:\t{}", zero_prover.elapsed(proof_time));
+        println!("Zero Proof Size:\t{}", mem::size_of_val(&zero_proof));
+
         
         HadamProof {
             c_Bi: c_B,
@@ -226,7 +237,10 @@ impl HadamProver {
         assert!(proof.c_1 == self.com_ref.commit(vec![-Scalar::one();n],
                                                     Scalar::zero()));
         let mut zero_prover = proof.zero_prover;
+        let verify_time = zero_prover.start_time();
         zero_prover.verify(trans, proof.zero_proof)?;
+        println!("\n");
+        println!("Zero Proof Verify Time:\t{}", zero_prover.elapsed(verify_time));
         Ok(())
     }
 }

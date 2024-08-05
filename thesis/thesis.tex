@@ -7,6 +7,7 @@
 \usepackage{hyperref}
 \usepackage{listings} % For code listings
 \usepackage{color}
+\usepackage{url}
 
 \geometry{margin=1in}
 \setstretch{1.5}
@@ -17,19 +18,19 @@
 % Title page
 \title{
     \HRule \\[0.4cm]
-    {\huge \bfseries Title of Your Thesis \\[0.4cm]}
+    {\huge \bfseries  Efficient ZK Argument for Shuffle Implementation in Rust \\[0.4cm]}
     \HRule \\[1.5cm]
     \textsc{\Large Master's Thesis}\\[0.5cm]
-    \textsc{\large University of }\\[0.5cm]
+    \textsc{\large University of Freiburg}\\[0.5cm]
 }
 
 \author{
-    \Large Your Name\\
-    \Large Student Number: 12345678\\
-    \Large Supervisor: Prof. Name
+    \Large Ahmet Ercem Bulut\\
+    \Large Student ID: 5362638\\
+    \Large Supervisor: Prof. Christian Schindelhauer
 }
 
-\date{Month, Year}
+\date{August, 2024}
 
 \begin{document}
 
@@ -42,14 +43,17 @@
 \pagenumbering{roman}
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
-Your abstract here.
+A shuffle operation in cryptography is an operation that takes committed and anonymous series of values and returns the original serie modified with a permuted order. Which is important in many real world scenarios(e-voting, mental card games).
+Due to the plaintexts or data being encrypted, the correctness of a shuffle of commitments is not straight forward to verify. To overcome this problem an honest zero-knowledge verifier has been proposed to verify the correctness of a shuffle of homomorphic encryptions by Bayer and Groth(2012).
+This argument for correctness combines two separate arguments(Multi-exponentiation Argument, Product Argument) to produce a Shuffle Argument for correctness. The implementation of these arguments are lacking in today’s literature of tools. With the use of Rust, which has enormous support from the cryptography community, and with it’s efficiency in runtime, we aim to provide an extensive and easy to use zero-knowledge proof
+system.
 
 \newpage
 
 % Acknowledgements
 \chapter*{Acknowledgements}
 \addcontentsline{toc}{chapter}{Acknowledgements}
-Your acknowledgements here.
+acknowledgements here.
 
 \newpage
 
@@ -70,63 +74,109 @@ Your acknowledgements here.
 
 \chapter{Introduction}
 \section{Background}
-Your background here.
+background here.
 
 \section{Problem Statement}
-Your problem statement here.
+problem statement here.
 
 \section{Objectives}
-Your research objectives here.
+research objectives here.
 
 \section{Thesis Structure}
-Your thesis structure here.
+thesis structure here.
 
 \chapter{Former Literature}
+\section{Source Material}
 \section{Related Work}
 Your related work here.
 
 \section{Existing Solutions}
-Your discussion on existing solutions here.
+\subsection{Mental Poker}
+Mental Poker\cite{mentalpoker} is a library aimed to implement a verifiable
+mental poker game for research purposes. While it is also purely in Rust,
+the library focuses more on the implementation and the efficiency of 
+Barnett Smart Card Protocol\cite{Barnett}. They also differ in their choice
+of cryptography primitives and go with arkworks curve points.\cite{arkworks}. 
+
+\subsection{Bayer-Groth Mixnet}
+A pure C++ implementation\cite{bgmixnet} of the protocol, for use in a messaging system.
+Useful for us as well since they have in detail performance metrics we can
+compare to. They use the same curve 25519 as ours and also give hardware specifications for the performances.\\
+They have certain drawbacks such as: for some values of the parameter $m$ the 
+verification fails, the row size $m$ should always be larger than the column size $n$ etc.. 
+Our library works without these limitations as well.
+
+\subsection{Practical Ad-Hoc Implementations}
+While there are a few more implementations of the argument available online, 
+they seem to either not be comprehensive enough for a comparison,
+or small code used a injection for other projects. Which we decided not to
+mention for brevity's sake.
 
 \chapter{Methodology}
+\section{Important Related Concepts}
+
+\subsection{El Gamal Encryption}
+\subsection{Pedersen Commitment}
+\subsection{Homomorphic Property}
+
 \section{Research Design}
-Your research design here.
+\subsection{Ristretto Points}
+A Ristretto Point is a cryptographic construction designed to create a
+prime-order group from elliptic curves, 
+enhancing the security and efficiency of cryptographic operations. 
+In the context of mental card games, Ristretto Points 
+enable players to prove knowledge or 
+possession of certain cards without revealing the cards themselves.
 
-\section{Data Collection}
-Your data collection methods here.
+\subsubsection{Prime-Order Group Properties}
+Ristretto Points provide a prime-order group that simplifies 
+mathematical operations and ensures predictable, 
+secure behavior in cryptographic protocols.
+A prime-order group eliminates issues related to cofactor multiplication, which can complicate the implementation of secure protocols.
+In mental card games, this property ensures that each card, represented as a Ristretto Point, interacts securely and predictably within the proof system.
 
-\section{Data Analysis}
-Your data analysis methods here.
+\subsubsection{Unique Encoding and Decoding}
+One of the key features of Ristretto Points is their ability to encode and decode points on an elliptic curve in a way that eliminates ambiguities.
+Each encoded point uniquely corresponds to a single group element, which is critical for maintaining the integrity of the cryptographic proofs.
+This property ensures that each card in the mental card game, when encoded as a Ristretto Point, has a unique representation, preventing issues such as duplication or misidentification.
+
+\subsubsection{Implementation of Choice}
+We have chosen Dalek Cryptography's crypto tools framework curve25519-dalek\cite{dalek:curve}
+as library of choice due to multiple reasons.
+As the library supports the homomorphic properties of such group points, it also reduces the dimension of operations via discarding unnecessary operations such as scalar and point multiplication(which would be cofactor multiplication).\\
+The library is also used prominently by the Rust Cryptography community in 
+implementations of all kinds of cryptographic proofs and arguments.(bulletproofs, r1cs etc...). This gives us the advantage of being easily implementable into already existing Ristretto Point systems.
+
 
 \chapter{Implementation}
 \section{System Design}
-Your system design here.
+system design here.
 
 \section{Implementation Details}
-Your implementation details here.
+implementation details here.
 
 \chapter{Results}
-Your results here.
+results here.
 
 \chapter{Discussion}
 \section{Analysis of Results}
-Your analysis of the results here.
+analysis of the results here.
 
 \section{Implications}
-Your discussion on implications here.
+discussion on implications here.
 
 \chapter{Conclusion and Future Work}
 \section{Conclusion}
-Your conclusion here.
+conclusion here.
 
 \section{Future Work}
-Your suggestions for future work here.
+suggestions for future work here.
 
 % References
 \newpage
 \addcontentsline{toc}{chapter}{References}
-\bibliographystyle{plain}
-\bibliography{yourbibfile}
+\bibliographystyle{IEEEtran}
+\bibliography{thesis}
 
 % Appendix
 \appendix

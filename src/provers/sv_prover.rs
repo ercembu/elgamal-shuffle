@@ -8,6 +8,7 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 use crate::traits::{traits::{Hadamard, 
+                                Timeable,
                                 EGMult, 
                                 InnerProduct, 
                                 Multiplicat,
@@ -39,6 +40,9 @@ pub struct SVProver {
     r: Scalar,
     com_ref: CommonRef,
     pub(crate) chall: Challenges
+}
+
+impl Timeable for SVProver {
 }
 
 impl SVProver {

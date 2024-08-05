@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+use std::mem;
+
 use rust_elgamal::{Scalar, Ciphertext};
 
 use curve25519_dalek::ristretto::RistrettoPoint;
@@ -9,6 +11,7 @@ use crate::provers::{hadamard_prover::{HadamProof, HadamProver},
                         sv_prover::{SVProof, SVProver}};
 
 use crate::traits::{traits::{Hadamard, 
+                                Timeable,
                                 EGMult, 
                                 InnerProduct, 
                                 Multiplicat,
@@ -47,6 +50,9 @@ pub struct ProdProver {
     
     /// Challenges from oracle, purely random
     pub(crate) chall: Challenges
+}
+
+impl Timeable for ProdProver {
 }
 
 impl ProdProver {
@@ -88,12 +94,16 @@ impl ProdProver {
         .collect();
         let c_b: RistrettoPoint = self.com_ref.commit(a_vec.clone(), s);
 
-        //TODO: HADAMARD ARGUMENT
+        //HADAMARD ARGUMENT
         let mut hadamard_prover: HadamProver = HadamProver::new(self.c_A.clone(), c_b.clone(), self.A.clone(), self.r.clone(), a_vec.clone(),  s.clone(), self.com_ref.clone());
 
         hadamard_prover.chall = self.chall.clone();
+        let hadamard_time = hadamard_prover.start_time();
         let hadamard_proof: HadamProof = hadamard_prover.prove(trans);
-        //TODO: SINGLE_VALUE PRODUCT
+        println!("\n");
+        println!("Hadamard Proof Time:\t{}", hadamard_prover.elapsed(hadamard_time));
+        println!("Hadamard Proof:\t{}", mem::size_of_val(&hadamard_proof));
+        //SINGLE_VALUE PRODUCT
         //
         let mut sv_prover: SVProver = SVProver::new(c_b,
                                                     a_vec,
@@ -103,7 +113,11 @@ impl ProdProver {
                                                     );
         sv_prover.chall = self.chall.clone();
 
+        let sv_time = sv_prover.start_time();
         let sv_proof: SVProof = sv_prover.prove(trans);
+        println!("\n");
+        println!("SV Product Proof Time:\t{}", sv_prover.elapsed(sv_time));
+        println!("SV Product Proof Size:\t{}", mem::size_of_val(&sv_proof));
         
         ProdProof {
             c_b: RistrettoPoint::random(&mut self.com_ref.rng),
@@ -120,10 +134,16 @@ impl ProdProver {
         proof: ProdProof,
     ) -> Result<(), ProofError> {
         let mut had_prover = proof.had_prover;
+        let verify_time = had_prover.start_time();
         had_prover.verify(trans, proof.had_proof)?;
+        println!("\n");
+        println!("Hadamard Verify Time:\t{}", had_prover.elapsed(verify_time));
 
         let mut sv_prover = proof.sv_prover;
+        let verify_time = sv_prover.start_time();
         sv_prover.verify(trans, proof.sv_proof)?;
+        println!("\n");
+        println!("SV Product Verify Time:\t{}", sv_prover.elapsed(verify_time));
         Ok(())
     }
 }

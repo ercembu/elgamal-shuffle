@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+use std::mem;
+
 use rust_elgamal::{Scalar, Ciphertext};
 
 use curve25519_dalek::ristretto::{RistrettoPoint, CompressedRistretto};
@@ -11,7 +13,8 @@ use crate::vec_utils::VecUtil::scalar_to_str;
 use crate::provers::{mexp_prover::{MexpProof, MexpOptimProof, MexpProver},
                         prod_prover::{ProdProof, ProdProver}};
 
-use crate::traits::{traits::{Hadamard, 
+use crate::traits::{traits::{Timeable,
+                                Hadamard, 
                                 EGMult, 
                                 InnerProduct, 
                                 Multiplicat,
@@ -56,6 +59,10 @@ pub struct ShuffleProver {
     chall: Challenges
 }
 
+impl Timeable for ShuffleProver {
+
+}
+
 
 impl ShuffleProver {
 
@@ -69,6 +76,7 @@ impl ShuffleProver {
         rho: Vec<Scalar>,
         com_ref: CommonRef,
     ) -> Self {
+        println!("m: {}, n: {}, mu: {}", m, n, mu);
         Self {
             m: m,
             n: n,
@@ -128,8 +136,12 @@ impl ShuffleProver {
                                                            .collect::<Vec<Scalar>>()
                                                             ).collect();
         let mut mexp_prover = MexpProver::new(C_mat, C_x, c_b.clone(), b_mat, s.clone(), rho_, self.com_ref.clone());
+        let mexp_time = mexp_prover.start_time();
         let mexp_proof = mexp_prover.prove_optim(trans, x.clone(), self.mu);
 
+        println!("\n");
+        println!("Opt Mexp Proof Time:\t{}", mexp_prover.elapsed(mexp_time));
+        println!("Opt Mexp Proof Size:\t{}", mem::size_of_val(&mexp_proof));
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
         let z = trans.challenge_scalar(b"z");
@@ -184,7 +196,11 @@ impl ShuffleProver {
                                               product, 
                                               self.com_ref.clone());
         prod_prover.chall = self.chall.clone();
+        let product_time = prod_prover.start_time();
         let prod_proof = prod_prover.prove(trans);
+        println!("\n");
+        println!("Product Proof Time:\t{}", prod_prover.elapsed(product_time));
+        println!("Product Proof Size:\t{}", mem::size_of_val(&prod_proof));
 
 
 
@@ -208,15 +224,21 @@ impl ShuffleProver {
 
         let mexp_proof = proof.mexp;
         let mut mexp_prover = proof.mexp_prover;
+        let mexp_time = mexp_prover.start_time();
         mexp_prover.verify_optim(mexp_proof, trans, self.mu)?;
+        println!("\n");
+        println!("Opt Mexp Verify Time:\t{}", mexp_prover.elapsed(mexp_time));
         let mut prod_prover = proof.prod_prover;
+        let prod_time = prod_prover.start_time();
         assert!(prod_prover.verify(trans, proof.prod).is_ok());
+        println!("\n");
+        println!("Product Verify Time:\t{}", prod_prover.elapsed(prod_time));
 
         Ok(())
     }
 }
 #[test]
-fn test_prover_product() {
+fn test_product_prover() {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
     use crate::EGInp;
@@ -279,7 +301,6 @@ fn test_prover_product() {
     let _z: Vec<Scalar> = (0..pi.len()).map(|_| -z.clone()).collect();
     let zeros: Vec<Scalar> = (0..m).map(|_| Scalar::zero()).collect();
     let c_z: Vec<RistrettoPoint> = cr.commit_vec(_z.clone(), zeros);
-    println!("{}", c_z.len());
 
     let c_d: Vec<RistrettoPoint> = c_a.iter()
         .zip(c_b.iter())
@@ -384,13 +405,22 @@ fn test_prover() {
                             rho,
                             cr
                         );
+    let proof_time = shuffle_prover.start_time();
                                 
     let mut shuffle_proof = shuffle_prover.prove(&mut prover_transcript);
+    
+
+    println!("\n");
+    println!("Shuffle Proof Time:\t{}", shuffle_prover.elapsed(proof_time));
+    println!("Shuffle Proof Size:\t{}", mem::size_of_val(&shuffle_proof));
 
     let mut verifier_transcript = Transcript::new(b"testShuffleProof");
 
+    let verify_time = shuffle_prover.start_time();
     assert!(shuffle_prover
             .verify(&mut verifier_transcript, shuffle_proof)
             .is_ok());
+    println!("\n");
+    println!("Shuffle Verify Time:\t{}", shuffle_prover.elapsed(verify_time));
 }
 
