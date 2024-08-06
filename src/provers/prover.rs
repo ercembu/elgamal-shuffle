@@ -364,9 +364,9 @@ fn test_prover_obs() {
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 16;
-    let n: usize = 8;
+    let n: usize = 4;
     
-    let mu: usize = 1; 
+    let mu: usize = 4; 
 
     let setup_time = SystemTime::now();
     let mut cr = CommonRef::new((m*n) as u64, rng);

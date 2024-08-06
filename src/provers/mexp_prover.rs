@@ -394,7 +394,7 @@ fn test_mexp_base_obs() {
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 16;
-    let n: usize = 8;
+    let n: usize = 4;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
 
@@ -441,7 +441,7 @@ fn test_mexp_base_obs() {
     let mexp_proof = mexp_prover.prove(&mut prover_transcript, x.clone());
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
 
-    println!("Base Mexp Proof Size:\t{}", mem::size_of_val(&mexp_prover));
+    println!("Base Mexp Proof Size:\t{}", mem::size_of_val(&mexp_proof));
 
     assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
 
