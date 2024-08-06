@@ -383,7 +383,7 @@ impl MexpProver {
 }
 
 #[test]
-fn test_mexp_base() {
+fn test_mexp_base_obs() {
     use super::*;
     use rand::rngs::StdRng;
     use rand::SeedableRng;
@@ -441,14 +441,14 @@ fn test_mexp_base() {
     let mexp_proof = mexp_prover.prove(&mut prover_transcript, x.clone());
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
 
-    println!("Base Mexp Proof Size: {}", mem::size_of_val(&mexp_prover));
+    println!("Base Mexp Proof Size:\t{}", mem::size_of_val(&mexp_prover));
 
     assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
 
     match now.elapsed() {
        Ok(elapsed) => {
            // it prints '2'
-           println!("Base Mexp: {}", elapsed.as_millis());
+           println!("Base Mexp Proof Time:\t{}", elapsed.as_millis());
        }
        Err(e) => {
            // an error occurred!

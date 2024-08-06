@@ -28,6 +28,7 @@ use crate::utils::{utils::Challenges,
 
 #[derive(Clone)]
 pub struct ShuffleProof {
+    //TODO: Try to Remove Provers from the Proof 
     pub(crate) c_A : Vec<RistrettoPoint>,
     pub(crate) c_B : Vec<RistrettoPoint>,
     pub(crate) mexp: MexpOptimProof,
@@ -355,17 +356,19 @@ fn test_product_prover() {
 }
 
 #[test]
-fn test_prover() {
+fn test_prover_obs() {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
     use crate::EGInp;
+    use std::time::SystemTime;
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 8;
-    let n: usize = 4;
+    let m: usize = 16;
+    let n: usize = 8;
     
-    let mu: usize = m / 2; 
+    let mu: usize = 1; 
 
+    let setup_time = SystemTime::now();
     let mut cr = CommonRef::new((m*n) as u64, rng);
     let deck: Vec<Scalar> = (0..(m*n)).map(|card| Scalar::from(card as u64))
                                     .collect();
@@ -377,6 +380,9 @@ fn test_prover() {
                                                         )
                                         )
                                     .collect();
+    println!("Setup Time:\t{}", setup_time.elapsed().unwrap().as_millis());
+
+    let perm_time = SystemTime::now();
     let pi: Vec<u64> = cr.rand_perm(&(1..=((m*n) as u64)).collect());
     let rho: Vec<Scalar> = vec![cr.rand_scalar(); m*n];
 
@@ -393,6 +399,7 @@ fn test_prover() {
              b_ + c_p
              ).collect();
 
+    println!("Perm Time:\t{}", perm_time.elapsed().unwrap().as_millis());
 
     let mut prover_transcript = Transcript::new(b"testShuffleProof");
     let mut shuffle_prover = ShuffleProver::new(
