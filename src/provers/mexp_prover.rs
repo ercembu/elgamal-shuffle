@@ -415,8 +415,8 @@ fn test_mexp_base_obs() {
     let now = SystemTime::now();
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 16;
-    let n: usize = 2;
+    let m: usize = 8;
+    let n: usize = 8;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
 

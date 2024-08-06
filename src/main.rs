@@ -1,3 +1,4 @@
+#![allow(warnings)]
 #![allow(non_snake_case)]
 #![feature(iter_next_chunk)]
 use rust_elgamal::{Scalar, Ciphertext};

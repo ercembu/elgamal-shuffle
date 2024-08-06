@@ -373,7 +373,7 @@ fn test_prover_obs() {
     let m: usize = 8;
     let n: usize = 8;
     
-    let mu: usize = 4; 
+    let mu: usize = 1; 
 
     let setup_time = SystemTime::now();
     let mut cr = CommonRef::new((m*n) as u64, rng);
