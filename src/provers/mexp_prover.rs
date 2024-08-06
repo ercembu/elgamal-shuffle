@@ -22,6 +22,10 @@ use crate::utils::{utils::Challenges,
                     errors::ProofError,
                     enums::EGInp};
 
+fn memory_size<T>(v: &Vec<T>) -> usize {
+    v.capacity() * mem::size_of::<T>()
+}
+
 #[derive(Clone, Default)]
 pub struct MexpProof {
     pub(crate) c_A0: RistrettoPoint,
@@ -33,6 +37,16 @@ pub struct MexpProof {
     pub(crate) s   : Scalar,
     pub(crate) tau : Scalar,
 }
+
+impl MexpProof {
+    pub fn size(&self) -> usize {
+        let size_bk = memory_size::<RistrettoPoint>(&self.c_Bk);
+        let size_ek = memory_size::<Ciphertext>(&self.Ek);
+        let size_a = memory_size::<Scalar>(&self.a_);
+
+        mem::size_of_val(self) + size_bk + size_ek + size_a
+    }
+}
 #[derive(Clone)]
 pub struct MexpOptimProof {
     pub(crate) c_b: Vec<RistrettoPoint>,
@@ -41,6 +55,14 @@ pub struct MexpOptimProof {
     pub(crate) s: Scalar,
     pub(crate) open_C: Ciphertext,
     pub(crate) C_: Ciphertext,
+}
+impl MexpOptimProof {
+    pub fn size(&self) -> usize {
+        let size_bk = memory_size::<RistrettoPoint>(&self.c_b);
+        let size_ek = memory_size::<Ciphertext>(&self.E_k);
+
+        mem::size_of_val(self) + size_bk + size_ek
+    }
 }
 ///Prover struct for Multi-Expo Argument
 #[derive(Clone)]
@@ -347,6 +369,9 @@ impl MexpProver {
             .fold(base, 
                   |acc, (c, a)| acc + c.as_slice().pow(a.as_slice())
                   );
+        println!("E_k len:\t{}", E_k.len());
+        println!("E_k size:\t{}", mem::size_of_val(&E_k));
+        println!("E_k[0] size:\t{}", mem::size_of_val(&E_k[0]));
 
         self.chall.x = x.clone();
         MexpOptimProof {
@@ -393,8 +418,8 @@ fn test_mexp_base_obs() {
     let now = SystemTime::now();
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 16;
-    let n: usize = 4;
+    let m: usize = 8;
+    let n: usize = 8;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
 
@@ -441,7 +466,7 @@ fn test_mexp_base_obs() {
     let mexp_proof = mexp_prover.prove(&mut prover_transcript, x.clone());
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
 
-    println!("Base Mexp Proof Size:\t{}", mem::size_of_val(&mexp_proof));
+    println!("Base Mexp Proof Size:\t{}", mexp_proof.size());
 
     assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
 

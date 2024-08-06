@@ -136,13 +136,20 @@ impl ShuffleProver {
         let b_mat: Vec<Vec<Scalar>> =  (0..self.m).map(|_| (0..self.n).map(|_| b_iter.next().unwrap())
                                                            .collect::<Vec<Scalar>>()
                                                             ).collect();
-        let mut mexp_prover = MexpProver::new(C_mat, C_x, c_b.clone(), b_mat, s.clone(), rho_, self.com_ref.clone());
+        let mut mexp_prover = MexpProver::new(C_mat, 
+                                              C_x, 
+                                              c_b.clone(), 
+                                              b_mat, 
+                                              s.clone(), 
+                                              rho_, 
+                                              self.com_ref.clone());
+
         let mexp_time = mexp_prover.start_time();
         let mexp_proof = mexp_prover.prove_optim(trans, x.clone(), self.mu);
 
         println!("\n");
         println!("Opt Mexp Proof Time:\t{}", mexp_prover.elapsed(mexp_time));
-        println!("Opt Mexp Proof Size:\t{}", mem::size_of_val(&mexp_proof));
+        println!("Opt Mexp Proof Size:\t{}", mexp_proof.size());
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
         let z = trans.challenge_scalar(b"z");
@@ -363,10 +370,10 @@ fn test_prover_obs() {
     use std::time::SystemTime;
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 16;
-    let n: usize = 4;
+    let m: usize = 8;
+    let n: usize = 8;
     
-    let mu: usize = 4; 
+    let mu: usize = 2; 
 
     let setup_time = SystemTime::now();
     let mut cr = CommonRef::new((m*n) as u64, rng);
