@@ -8,7 +8,8 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 use crate::provers::{hadamard_prover::{HadamProof, HadamProver},
-                        sv_prover::{SVProof, SVProver}};
+                        sv_prover::{SVProof, SVProver},
+                        zero_prover::{ZeroProver}};
 
 use crate::traits::{traits::{Hadamard, 
                                 Timeable,
@@ -26,9 +27,7 @@ use crate::utils::{utils::Challenges,
 pub struct ProdProof {
     pub(crate) c_b: RistrettoPoint,
     pub(crate) had_proof: HadamProof,
-    pub(crate) had_prover: HadamProver,
     pub(crate) sv_proof: SVProof,
-    pub(crate) sv_prover: SVProver,
 }
 ///Prover struct for Product Argument
 #[derive(Clone)]
@@ -76,7 +75,7 @@ impl ProdProver {
     pub fn prove(
         &mut self,
         trans: &mut Transcript,
-    ) -> ProdProof {
+    ) -> (ZeroProver, SVProver, HadamProver, ProdProof) {
         let s: Scalar = self.com_ref.rand_scalar();
 
         let m = self.A.len();
@@ -99,7 +98,7 @@ impl ProdProver {
 
         hadamard_prover.chall = self.chall.clone();
         let hadamard_time = hadamard_prover.start_time();
-        let hadamard_proof: HadamProof = hadamard_prover.prove(trans);
+        let (zero_prover, hadamard_proof): (ZeroProver, HadamProof) = hadamard_prover.prove(trans);
         println!("\n");
         println!("Hadamard Proof Time:\t{}", hadamard_prover.elapsed(hadamard_time));
         println!("Hadamard Proof:\t{}", mem::size_of_val(&hadamard_proof));
@@ -119,27 +118,30 @@ impl ProdProver {
         println!("SV Product Proof Time:\t{}", sv_prover.elapsed(sv_time));
         println!("SV Product Proof Size:\t{}", mem::size_of_val(&sv_proof));
         
+        (zero_prover,
+         sv_prover,
+         hadamard_prover,
         ProdProof {
             c_b: RistrettoPoint::random(&mut self.com_ref.rng),
             had_proof: hadamard_proof,
-            had_prover: hadamard_prover,
             sv_proof: sv_proof,
-            sv_prover: sv_prover,
         }
+        )
     }
 
     pub fn verify(
         &mut self,
         trans: &mut Transcript,
         proof: ProdProof,
+        mut had_prover: HadamProver,
+        mut zero_prover: ZeroProver,
+        mut sv_prover: SVProver
     ) -> Result<(), ProofError> {
-        let mut had_prover = proof.had_prover;
         let verify_time = had_prover.start_time();
-        had_prover.verify(trans, proof.had_proof)?;
+        had_prover.verify(trans, proof.had_proof, zero_prover)?;
         println!("\n");
         println!("Hadamard Verify Time:\t{}", had_prover.elapsed(verify_time));
 
-        let mut sv_prover = proof.sv_prover;
         let verify_time = sv_prover.start_time();
         sv_prover.verify(trans, proof.sv_proof)?;
         println!("\n");
@@ -177,10 +179,11 @@ fn test_prod() {
         r,
         b,
         com_ref);
-    let proof = prod_prover.prove(&mut prover_transcript);
+    let (zero_prover, sv_prover, hadam_prover, proof) = prod_prover.prove(&mut prover_transcript);
 
     let mut verifier_transcript = Transcript::new(b"testProdProof");
 
-    assert!(prod_prover.verify(&mut verifier_transcript, proof).is_ok());
+    assert!(prod_prover.verify(&mut verifier_transcript, proof, mut zero_prover,
+                               mut sv_prover, mut hadam_prover).is_ok());
 
 }

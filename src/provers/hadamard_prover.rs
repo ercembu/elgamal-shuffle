@@ -38,8 +38,6 @@ pub struct HadamProof{
     c_1: RistrettoPoint,
     ///Zero Argument Proof
     zero_proof: ZeroProof,
-    ///Zero Argument Prover to be used in verification
-    zero_prover: ZeroProver,
 }
 
 ///Struct for initial Hadamard Proof Arguments
@@ -123,7 +121,7 @@ impl HadamProver {
     pub fn prove(
         &mut self,
         trans: &mut Transcript,
-    ) -> HadamProof {
+    ) -> (ZeroProver, HadamProof) {
         trans.append_message(b"dom_sep", b"HadamardProof");
 
         let m = self.A.len();
@@ -214,13 +212,14 @@ impl HadamProver {
         println!("Zero Proof Size:\t{}", mem::size_of_val(&zero_proof));
 
         
-        HadamProof {
+        (zero_prover,
+         HadamProof {
             c_Bi: c_B,
             c_D: c_D,
             c_1: c_1,
             zero_proof: zero_proof,
-            zero_prover: zero_prover,
         }
+        )
     }
     
     ///verify method that verifies a HadamardProof
@@ -228,6 +227,7 @@ impl HadamProver {
         &mut self,
         trans: &mut Transcript,
         proof: HadamProof,
+        mut zero_prover: ZeroProver
     ) -> Result<(), ProofError> {
         trans.append_message(b"dom_sep", b"HadamardProof");
         let m = proof.c_Bi.len();
@@ -236,7 +236,6 @@ impl HadamProver {
         assert!(proof.c_Bi[m-1] == self.c_b);
         assert!(proof.c_1 == self.com_ref.commit(vec![-Scalar::one();n],
                                                     Scalar::zero()));
-        let mut zero_prover = proof.zero_prover;
         let verify_time = zero_prover.start_time();
         zero_prover.verify(trans, proof.zero_proof)?;
         println!("\n");

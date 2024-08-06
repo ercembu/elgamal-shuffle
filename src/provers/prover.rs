@@ -11,6 +11,9 @@ use crate::arguers::CommonRef;
 use crate::vec_utils::VecUtil::scalar_to_str;
 
 use crate::provers::{mexp_prover::{MexpProof, MexpOptimProof, MexpProver},
+                        sv_prover::{SVProver},
+                        zero_prover::{ZeroProver},
+                        hadamard_prover::{HadamProver},
                         prod_prover::{ProdProof, ProdProver}};
 
 use crate::traits::{traits::{Timeable,
@@ -32,9 +35,7 @@ pub struct ShuffleProof {
     pub(crate) c_A : Vec<RistrettoPoint>,
     pub(crate) c_B : Vec<RistrettoPoint>,
     pub(crate) mexp: MexpOptimProof,
-    pub(crate) mexp_prover: MexpProver,
     pub(crate) prod: ProdProof,
-    pub(crate) prod_prover: ProdProver,
     pub(crate) y: Scalar,
 }
 
@@ -91,7 +92,8 @@ impl ShuffleProver {
         }
     }
 
-    pub fn prove(&mut self, trans: &mut Transcript) -> ShuffleProof
+    pub fn prove(&mut self, trans: &mut Transcript) 
+        -> (ZeroProver, SVProver, HadamProver, ProdProver, MexpProver, ShuffleProof)
     {
         trans.shuffle_domain_sep(self.n as u64, self.m as u64);
         //Prover
@@ -216,9 +218,7 @@ impl ShuffleProver {
             c_A: c_a,
             c_B: c_b,
             mexp: mexp_proof,
-            mexp_prover: mexp_prover,
             prod: prod_proof,
-            prod_prover: prod_prover,
             y: y,
         }
     }
