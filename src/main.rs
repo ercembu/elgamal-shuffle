@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![allow(warnings)]
 #![feature(iter_next_chunk)]
 use rust_elgamal::{Scalar, Ciphertext};
 use rand::rngs::StdRng;
