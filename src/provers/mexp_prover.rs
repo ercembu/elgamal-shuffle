@@ -369,9 +369,6 @@ impl MexpProver {
             .fold(base, 
                   |acc, (c, a)| acc + c.as_slice().pow(a.as_slice())
                   );
-        println!("E_k len:\t{}", E_k.len());
-        println!("E_k size:\t{}", mem::size_of_val(&E_k));
-        println!("E_k[0] size:\t{}", mem::size_of_val(&E_k[0]));
 
         self.chall.x = x.clone();
         MexpOptimProof {
@@ -418,8 +415,8 @@ fn test_mexp_base_obs() {
     let now = SystemTime::now();
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
-    let m: usize = 8;
-    let n: usize = 8;
+    let m: usize = 16;
+    let n: usize = 2;
 
     let mut cr = CommonRef::new((m*n) as u64, rng);
 
