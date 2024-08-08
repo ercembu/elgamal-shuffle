@@ -8,6 +8,8 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 use crate::traits::{traits::{Hadamard, 
+                                HeapSize,
+                                EasySize,
                                 Timeable,
                                 EGMult, 
                                 InnerProduct, 
@@ -30,6 +32,19 @@ pub(crate) struct SVProof {
     r: Scalar,
     s: Scalar,
     x: Scalar,
+}
+
+impl HeapSize for SVProof {
+    fn heap_size(&self) -> usize {
+        self.c_d.ez_size()
+            + self.c_sig.ez_size()
+            + self.c_del.ez_size()
+            + self.a_vec.ez_size()
+            + self.b_vec.ez_size()
+            + self.r.ez_size()
+            + self.s.ez_size()
+            + self.x.ez_size()
+    }
 }
 
 #[derive(Clone)]

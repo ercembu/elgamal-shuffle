@@ -1,9 +1,11 @@
+use std::mem;
 use std::vec::Vec;
 use std::borrow::Borrow;
+use std::iter::IntoIterator;
 
 use crate::utils::vec_utils::VecUtil;
 
-use rust_elgamal::{Scalar, Ciphertext};
+use rust_elgamal::{Scalar, Ciphertext, RistrettoPoint};
 
 use std::time::SystemTime;
 
@@ -16,6 +18,31 @@ pub trait Timeable {
     fn elapsed(&self, time: SystemTime) -> u128 {
         time.elapsed().unwrap().as_millis()
     }
+}
+
+pub trait EasySize {
+    fn ez_size(&self) -> usize{
+        mem::size_of_val(self)
+    }
+}
+
+impl<T> EasySize for Vec<T> {
+    fn ez_size(&self) -> usize {
+        self.capacity() * mem::size_of::<T>()
+    }
+}
+
+impl EasySize for Scalar {
+}
+
+impl EasySize for RistrettoPoint {
+}
+
+impl EasySize for Ciphertext{
+}
+
+pub trait HeapSize {
+    fn heap_size(&self) -> usize;
 }
 
 pub trait Hadamard {

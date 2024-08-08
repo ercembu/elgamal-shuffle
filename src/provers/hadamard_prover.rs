@@ -11,6 +11,8 @@ use merlin::Transcript;
 use crate::arguers::CommonRef;
 
 use crate::traits::{traits::{Hadamard, 
+                                HeapSize,
+                                EasySize,
                                 Timeable,
                                 EGMult, 
                                 InnerProduct, 
@@ -38,10 +40,16 @@ pub struct HadamProof{
     c_1: RistrettoPoint,
     ///Zero Argument Proof
     zero_proof: ZeroProof,
-    ///Zero Argument Prover to be used in verification
-    zero_prover: ZeroProver,
 }
 
+impl HeapSize for HadamProof {
+    fn heap_size(&self) -> usize {
+        self.c_Bi.ez_size()
+            + self.c_D.ez_size()
+            + self.c_1.ez_size()
+            + self.zero_proof.heap_size()
+    }
+}
 ///Struct for initial Hadamard Proof Arguments
 ///
 ///Main objective is to show HadamardSum(A) == b
@@ -123,7 +131,7 @@ impl HadamProver {
     pub fn prove(
         &mut self,
         trans: &mut Transcript,
-    ) -> HadamProof {
+    ) -> (ZeroProver, HadamProof) {
         trans.append_message(b"dom_sep", b"HadamardProof");
 
         let m = self.A.len();
@@ -211,16 +219,17 @@ impl HadamProver {
         let zero_proof: ZeroProof = zero_prover.prove(trans);
         println!("\n");
         println!("Zero Proof Time:\t{}", zero_prover.elapsed(proof_time));
-        println!("Zero Proof Size:\t{}", mem::size_of_val(&zero_proof));
+        println!("Zero Proof Size:\t{}", zero_proof.heap_size());
 
         
-        HadamProof {
+        (zero_prover,
+         HadamProof {
             c_Bi: c_B,
             c_D: c_D,
             c_1: c_1,
             zero_proof: zero_proof,
-            zero_prover: zero_prover,
         }
+        )
     }
     
     ///verify method that verifies a HadamardProof
@@ -228,6 +237,7 @@ impl HadamProver {
         &mut self,
         trans: &mut Transcript,
         proof: HadamProof,
+        mut zero_prover: ZeroProver
     ) -> Result<(), ProofError> {
         trans.append_message(b"dom_sep", b"HadamardProof");
         let m = proof.c_Bi.len();
@@ -236,7 +246,6 @@ impl HadamProver {
         assert!(proof.c_Bi[m-1] == self.c_b);
         assert!(proof.c_1 == self.com_ref.commit(vec![-Scalar::one();n],
                                                     Scalar::zero()));
-        let mut zero_prover = proof.zero_prover;
         let verify_time = zero_prover.start_time();
         zero_prover.verify(trans, proof.zero_proof)?;
         println!("\n");
@@ -279,10 +288,11 @@ fn test_base() {
         com_ref.clone()
     );
 
-    let mut hadam_proof = hadam_prover.prove(&mut prover_transcript);
+    let (mut zero_prover, mut hadam_proof) = hadam_prover.prove(&mut prover_transcript);
 
     let mut verifier_transcript = Transcript::new(b"testHadamProof");
-    assert!(hadam_prover.verify(&mut verifier_transcript, hadam_proof).is_ok());
+    assert!(hadam_prover.verify(&mut verifier_transcript, hadam_proof, 
+                                zero_prover).is_ok());
 
 
 }

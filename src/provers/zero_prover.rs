@@ -8,6 +8,8 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 use crate::traits::{traits::{Hadamard, 
+                                HeapSize,
+                                EasySize,
                                 Timeable,
                                 EGMult, 
                                 InnerProduct, 
@@ -40,6 +42,20 @@ pub struct ZeroProof {
     s: Scalar,
     t: Scalar,
     x: Scalar,
+}
+
+impl HeapSize for ZeroProof {
+    fn heap_size(&self) -> usize {
+        self.c_A0.ez_size()
+            + self.c_Bm.ez_size()
+            + self.c_D.ez_size()
+            + self.a_vec.ez_size()
+            + self.b_vec.ez_size()
+            + self.r.ez_size()
+            + self.s.ez_size()
+            + self.t.ez_size()
+            + self.x.ez_size()
+    }
 }
 
 ///Struct for initial Zero Proof Arguments

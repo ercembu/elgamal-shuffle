@@ -11,9 +11,14 @@ use crate::arguers::CommonRef;
 use crate::vec_utils::VecUtil::scalar_to_str;
 
 use crate::provers::{mexp_prover::{MexpProof, MexpOptimProof, MexpProver},
+                        sv_prover::{SVProver},
+                        zero_prover::{ZeroProver},
+                        hadamard_prover::{HadamProver},
                         prod_prover::{ProdProof, ProdProver}};
 
 use crate::traits::{traits::{Timeable,
+                                HeapSize,
+                                EasySize,
                                 Hadamard, 
                                 EGMult, 
                                 InnerProduct, 
@@ -28,14 +33,21 @@ use crate::utils::{utils::Challenges,
 
 #[derive(Clone)]
 pub struct ShuffleProof {
-    //TODO: Try to Remove Provers from the Proof 
     pub(crate) c_A : Vec<RistrettoPoint>,
     pub(crate) c_B : Vec<RistrettoPoint>,
     pub(crate) mexp: MexpOptimProof,
-    pub(crate) mexp_prover: MexpProver,
     pub(crate) prod: ProdProof,
-    pub(crate) prod_prover: ProdProver,
     pub(crate) y: Scalar,
+}
+
+impl HeapSize for ShuffleProof {
+    fn heap_size(&self) -> usize {
+        self.c_A.ez_size()
+            + self.c_B.ez_size()
+            + self.mexp.heap_size()
+            + self.prod.heap_size()
+            + self.y.ez_size()
+    }
 }
 
 ///Prover struct for Shuffle Argument
@@ -91,7 +103,8 @@ impl ShuffleProver {
         }
     }
 
-    pub fn prove(&mut self, trans: &mut Transcript) -> ShuffleProof
+    pub fn prove(&mut self, trans: &mut Transcript) 
+        -> (ZeroProver, SVProver, HadamProver, ProdProver, MexpProver, ShuffleProof)
     {
         trans.shuffle_domain_sep(self.n as u64, self.m as u64);
         //Prover
@@ -149,7 +162,7 @@ impl ShuffleProver {
 
         println!("\n");
         println!("Opt Mexp Proof Time:\t{}", mexp_prover.elapsed(mexp_time));
-        println!("Opt Mexp Proof Size:\t{}", mexp_proof.size());
+        println!("Opt Mexp Proof Size:\t{}", mexp_proof.heap_size());
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
         let z = trans.challenge_scalar(b"z");
@@ -205,40 +218,53 @@ impl ShuffleProver {
                                               self.com_ref.clone());
         prod_prover.chall = self.chall.clone();
         let product_time = prod_prover.start_time();
-        let prod_proof = prod_prover.prove(trans);
+        let (zero_prover, 
+             sv_prover, 
+             hadamard_prover, 
+             prod_proof) = prod_prover.prove(trans);
         println!("\n");
         println!("Product Proof Time:\t{}", prod_prover.elapsed(product_time));
         println!("Product Proof Size:\t{}", mem::size_of_val(&prod_proof));
 
 
 
-        ShuffleProof {
-            c_A: c_a,
-            c_B: c_b,
-            mexp: mexp_proof,
-            mexp_prover: mexp_prover,
-            prod: prod_proof,
-            prod_prover: prod_prover,
-            y: y,
-        }
+        (zero_prover,
+            sv_prover,
+            hadamard_prover,
+            prod_prover,
+            mexp_prover,
+            ShuffleProof {
+                c_A: c_a,
+                c_B: c_b,
+                mexp: mexp_proof,
+                prod: prod_proof,
+                y: y,
+            }
+        )
     }
 
     pub fn verify(
         &mut self,
         trans: &mut Transcript,
         mut proof: ShuffleProof,
+        mut zero_prover: ZeroProver,
+        mut sv_prover: SVProver,
+        mut hadamard_prover: HadamProver,
+        mut prod_prover: ProdProver,
+        mut mexp_prover: MexpProver,
     ) -> Result<(), ProofError> {
         trans.shuffle_domain_sep(self.n as u64, self.m as u64);
 
         let mexp_proof = proof.mexp;
-        let mut mexp_prover = proof.mexp_prover;
         let mexp_time = mexp_prover.start_time();
         mexp_prover.verify_optim(mexp_proof, trans, self.mu)?;
         println!("\n");
         println!("Opt Mexp Verify Time:\t{}", mexp_prover.elapsed(mexp_time));
-        let mut prod_prover = proof.prod_prover;
         let prod_time = prod_prover.start_time();
-        assert!(prod_prover.verify(trans, proof.prod).is_ok());
+        assert!(prod_prover.verify(trans, proof.prod, 
+                                   hadamard_prover,
+                                   zero_prover,
+                                   sv_prover).is_ok());
         println!("\n");
         println!("Product Verify Time:\t{}", prod_prover.elapsed(prod_time));
 
@@ -356,10 +382,16 @@ fn test_product_prover() {
                                           cr.clone());
     prod_prover.chall = Challenges{x:x, y:y, z:z};
     let mut trans = Transcript::new(b"testShuffleProof");
-    let prod_proof = prod_prover.prove(&mut trans);
+    let (zero_prover, 
+         sv_prover, 
+         hadam_prover,
+         prod_proof) = prod_prover.prove(&mut trans);
     let mut trans = Transcript::new(b"testShuffleProof");
 
-    assert!(prod_prover.verify(&mut trans, prod_proof).is_ok());
+    assert!(prod_prover.verify(&mut trans, prod_proof,
+                               hadam_prover,
+                               zero_prover,
+                               sv_prover).is_ok());
 }
 
 #[test]
@@ -421,18 +453,28 @@ fn test_prover_obs() {
                         );
     let proof_time = shuffle_prover.start_time();
                                 
-    let mut shuffle_proof = shuffle_prover.prove(&mut prover_transcript);
+    let (mut zero_prover, 
+             mut sv_prover, 
+             mut hadam_prover, 
+             mut prod_prover, 
+             mut mexp_prover, 
+             mut shuffle_proof) = shuffle_prover.prove(&mut prover_transcript);
     
 
     println!("\n");
     println!("Shuffle Proof Time:\t{}", shuffle_prover.elapsed(proof_time));
-    println!("Shuffle Proof Size:\t{}", mem::size_of_val(&shuffle_proof));
+    println!("Shuffle Proof Size:\t{}", shuffle_proof.heap_size());
 
     let mut verifier_transcript = Transcript::new(b"testShuffleProof");
 
     let verify_time = shuffle_prover.start_time();
     assert!(shuffle_prover
-            .verify(&mut verifier_transcript, shuffle_proof)
+            .verify(&mut verifier_transcript, shuffle_proof,
+                    zero_prover,
+                    sv_prover,
+                    hadam_prover,
+                    prod_prover,
+                    mexp_prover)
             .is_ok());
     println!("\n");
     println!("Shuffle Verify Time:\t{}", shuffle_prover.elapsed(verify_time));
