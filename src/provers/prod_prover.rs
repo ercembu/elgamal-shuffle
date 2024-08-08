@@ -12,6 +12,8 @@ use crate::provers::{hadamard_prover::{HadamProof, HadamProver},
                         zero_prover::{ZeroProver}};
 
 use crate::traits::{traits::{Hadamard, 
+                                HeapSize,
+                                EasySize,
                                 Timeable,
                                 EGMult, 
                                 InnerProduct, 
@@ -28,6 +30,14 @@ pub struct ProdProof {
     pub(crate) c_b: RistrettoPoint,
     pub(crate) had_proof: HadamProof,
     pub(crate) sv_proof: SVProof,
+}
+
+impl HeapSize for ProdProof {
+    fn heap_size(&self) -> usize {
+        self.c_b.ez_size()
+            + self.had_proof.heap_size()
+            + self.sv_proof.heap_size()
+    }
 }
 ///Prover struct for Product Argument
 #[derive(Clone)]
@@ -101,7 +111,7 @@ impl ProdProver {
         let (zero_prover, hadamard_proof): (ZeroProver, HadamProof) = hadamard_prover.prove(trans);
         println!("\n");
         println!("Hadamard Proof Time:\t{}", hadamard_prover.elapsed(hadamard_time));
-        println!("Hadamard Proof:\t{}", mem::size_of_val(&hadamard_proof));
+        println!("Hadamard Proof Size:\t{}", hadamard_proof.heap_size());
         //SINGLE_VALUE PRODUCT
         //
         let mut sv_prover: SVProver = SVProver::new(c_b,
@@ -116,7 +126,7 @@ impl ProdProver {
         let sv_proof: SVProof = sv_prover.prove(trans);
         println!("\n");
         println!("SV Product Proof Time:\t{}", sv_prover.elapsed(sv_time));
-        println!("SV Product Proof Size:\t{}", mem::size_of_val(&sv_proof));
+        println!("SV Product Proof Size:\t{}", sv_proof.heap_size());
         
         (zero_prover,
          sv_prover,

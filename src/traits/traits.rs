@@ -20,36 +20,29 @@ pub trait Timeable {
     }
 }
 
-pub trait EasySize<T> {
+pub trait EasySize {
     fn ez_size(&self) -> usize{
         mem::size_of_val(self)
     }
 }
 
-impl<T> EasySize<T> for Vec<T> {
+impl<T> EasySize for Vec<T> {
     fn ez_size(&self) -> usize {
         self.capacity() * mem::size_of::<T>()
     }
 }
 
-impl<T> EasySize<T> for Scalar {
+impl EasySize for Scalar {
 }
 
-impl<T> EasySize<T> for RistrettoPoint {
+impl EasySize for RistrettoPoint {
+}
+
+impl EasySize for Ciphertext{
 }
 
 pub trait HeapSize {
-    fn heap_size<a>(&self) -> usize
-    where
-        Self: IntoIterator,
-        Self: Copy,
-        Self::Item: EasySize<a>,
-    {
-        self.into_iter()
-            .fold(0 as usize, 
-                  |acc, field| acc + field.ez_size()
-                  )
-    }
+    fn heap_size(&self) -> usize;
 }
 
 pub trait Hadamard {

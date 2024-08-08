@@ -9,6 +9,8 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 use crate::traits::{traits::{Hadamard, 
+                                HeapSize,
+                                EasySize,
                                 EGMult, 
                                 InnerProduct, 
                                 Multiplicat,
@@ -22,10 +24,6 @@ use crate::utils::{utils::Challenges,
                     errors::ProofError,
                     enums::EGInp};
 
-fn memory_size<T>(v: &Vec<T>) -> usize {
-    v.capacity() * mem::size_of::<T>()
-}
-
 #[derive(Clone, Default)]
 pub struct MexpProof {
     pub(crate) c_A0: RistrettoPoint,
@@ -38,15 +36,20 @@ pub struct MexpProof {
     pub(crate) tau : Scalar,
 }
 
-impl MexpProof {
-    pub fn size(&self) -> usize {
-        let size_bk = memory_size::<RistrettoPoint>(&self.c_Bk);
-        let size_ek = memory_size::<Ciphertext>(&self.Ek);
-        let size_a = memory_size::<Scalar>(&self.a_);
-
-        mem::size_of_val(self) + size_bk + size_ek + size_a
+impl HeapSize for MexpProof {
+    fn heap_size(&self) -> usize {
+        self.c_A0.ez_size()
+            + self.c_Bk.ez_size()
+            + self.Ek.ez_size()
+            + self.a_.ez_size()
+            + self.r.ez_size()
+            +self.b.ez_size()
+            +self.s.ez_size()
+            +self.tau.ez_size()
     }
+
 }
+
 #[derive(Clone)]
 pub struct MexpOptimProof {
     pub(crate) c_b: Vec<RistrettoPoint>,
@@ -56,14 +59,18 @@ pub struct MexpOptimProof {
     pub(crate) open_C: Ciphertext,
     pub(crate) C_: Ciphertext,
 }
-impl MexpOptimProof {
-    pub fn size(&self) -> usize {
-        let size_bk = memory_size::<RistrettoPoint>(&self.c_b);
-        let size_ek = memory_size::<Ciphertext>(&self.E_k);
-
-        mem::size_of_val(self) + size_bk + size_ek
+impl HeapSize for MexpOptimProof {
+    fn heap_size(&self) -> usize {
+        self.c_b.ez_size()
+            + self.E_k.ez_size()
+            +self.b.ez_size()
+            +self.s.ez_size()
+            +self.open_C.ez_size()
+            +self.C_.ez_size()
     }
+
 }
+
 ///Prover struct for Multi-Expo Argument
 #[derive(Clone)]
 pub struct MexpProver {
@@ -463,7 +470,7 @@ fn test_mexp_base_obs() {
     let mexp_proof = mexp_prover.prove(&mut prover_transcript, x.clone());
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
 
-    println!("Base Mexp Proof Size:\t{}", mexp_proof.size());
+    println!("Base Mexp Proof Size:\t{}", &mexp_proof.heap_size());
 
     assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
 

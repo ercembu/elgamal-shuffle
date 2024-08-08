@@ -17,6 +17,8 @@ use crate::provers::{mexp_prover::{MexpProof, MexpOptimProof, MexpProver},
                         prod_prover::{ProdProof, ProdProver}};
 
 use crate::traits::{traits::{Timeable,
+                                HeapSize,
+                                EasySize,
                                 Hadamard, 
                                 EGMult, 
                                 InnerProduct, 
@@ -36,6 +38,16 @@ pub struct ShuffleProof {
     pub(crate) mexp: MexpOptimProof,
     pub(crate) prod: ProdProof,
     pub(crate) y: Scalar,
+}
+
+impl HeapSize for ShuffleProof {
+    fn heap_size(&self) -> usize {
+        self.c_A.ez_size()
+            + self.c_B.ez_size()
+            + self.mexp.heap_size()
+            + self.prod.heap_size()
+            + self.y.ez_size()
+    }
 }
 
 ///Prover struct for Shuffle Argument
@@ -150,7 +162,7 @@ impl ShuffleProver {
 
         println!("\n");
         println!("Opt Mexp Proof Time:\t{}", mexp_prover.elapsed(mexp_time));
-        println!("Opt Mexp Proof Size:\t{}", mexp_proof.size());
+        println!("Opt Mexp Proof Size:\t{}", mexp_proof.heap_size());
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
         let z = trans.challenge_scalar(b"z");
@@ -451,7 +463,7 @@ fn test_prover_obs() {
 
     println!("\n");
     println!("Shuffle Proof Time:\t{}", shuffle_prover.elapsed(proof_time));
-    println!("Shuffle Proof Size:\t{}", mem::size_of_val(&shuffle_proof));
+    println!("Shuffle Proof Size:\t{}", shuffle_proof.heap_size());
 
     let mut verifier_transcript = Transcript::new(b"testShuffleProof");
 

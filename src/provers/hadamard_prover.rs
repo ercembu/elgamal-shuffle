@@ -11,6 +11,8 @@ use merlin::Transcript;
 use crate::arguers::CommonRef;
 
 use crate::traits::{traits::{Hadamard, 
+                                HeapSize,
+                                EasySize,
                                 Timeable,
                                 EGMult, 
                                 InnerProduct, 
@@ -40,6 +42,14 @@ pub struct HadamProof{
     zero_proof: ZeroProof,
 }
 
+impl HeapSize for HadamProof {
+    fn heap_size(&self) -> usize {
+        self.c_Bi.ez_size()
+            + self.c_D.ez_size()
+            + self.c_1.ez_size()
+            + self.zero_proof.heap_size()
+    }
+}
 ///Struct for initial Hadamard Proof Arguments
 ///
 ///Main objective is to show HadamardSum(A) == b
@@ -209,7 +219,7 @@ impl HadamProver {
         let zero_proof: ZeroProof = zero_prover.prove(trans);
         println!("\n");
         println!("Zero Proof Time:\t{}", zero_prover.elapsed(proof_time));
-        println!("Zero Proof Size:\t{}", mem::size_of_val(&zero_proof));
+        println!("Zero Proof Size:\t{}", zero_proof.heap_size());
 
         
         (zero_prover,
