@@ -278,10 +278,11 @@ fn test_base() {
         com_ref.clone()
     );
 
-    let mut hadam_proof = hadam_prover.prove(&mut prover_transcript);
+    let (mut zero_prover, mut hadam_proof) = hadam_prover.prove(&mut prover_transcript);
 
     let mut verifier_transcript = Transcript::new(b"testHadamProof");
-    assert!(hadam_prover.verify(&mut verifier_transcript, hadam_proof).is_ok());
+    assert!(hadam_prover.verify(&mut verifier_transcript, hadam_proof, 
+                                zero_prover).is_ok());
 
 
 }

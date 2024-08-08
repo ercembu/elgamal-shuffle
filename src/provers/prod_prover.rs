@@ -179,11 +179,11 @@ fn test_prod() {
         r,
         b,
         com_ref);
-    let (zero_prover, sv_prover, hadam_prover, proof) = prod_prover.prove(&mut prover_transcript);
+    let (mut zero_prover, mut sv_prover, mut hadam_prover, proof) = prod_prover.prove(&mut prover_transcript);
 
     let mut verifier_transcript = Transcript::new(b"testProdProof");
 
-    assert!(prod_prover.verify(&mut verifier_transcript, proof, mut zero_prover,
-                               mut sv_prover, mut hadam_prover).is_ok());
+    assert!(prod_prover.verify(&mut verifier_transcript, proof, hadam_prover,
+                               zero_prover, sv_prover).is_ok());
 
 }

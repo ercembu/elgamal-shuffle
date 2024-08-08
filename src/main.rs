@@ -70,12 +70,22 @@ fn main() {
                             cr
                         );
                                 
-    let mut shuffle_proof = shuffle_prover.prove(&mut prover_transcript);
+    let (mut zero_prover,
+         mut sv_prover,
+         mut hadam_prover,
+         mut prod_prover,
+         mut mexp_prover,
+         mut shuffle_proof) = shuffle_prover.prove(&mut prover_transcript);
 
     let mut verifier_transcript = Transcript::new(b"ShuffleProof");
 
     assert!(shuffle_prover
-            .verify(&mut verifier_transcript, shuffle_proof)
+            .verify(&mut verifier_transcript, shuffle_proof, 
+                    zero_prover,
+                    sv_prover,
+                    hadam_prover,
+                    prod_prover,
+                    mexp_prover)
             .is_ok());
     
 }
