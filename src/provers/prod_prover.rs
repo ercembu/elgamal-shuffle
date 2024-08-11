@@ -1,3 +1,4 @@
+//! Struct Proof and Prover for Product Argument
 #![allow(non_snake_case)]
 use std::mem;
 
@@ -25,6 +26,7 @@ use crate::traits::{traits::{Hadamard,
 use crate::utils::{utils::Challenges,
                     transcript::TranscriptProtocol,
                     errors::ProofError};
+///Data struct for the final proof arguments
 #[derive(Clone)]
 pub struct ProdProof {
     pub(crate) c_b: RistrettoPoint,
@@ -39,7 +41,7 @@ impl HeapSize for ProdProof {
             + self.sv_proof.heap_size()
     }
 }
-///Prover struct for Product Argument
+///Prover struct for Product Arguments
 #[derive(Clone)]
 pub struct ProdProver {
     ///commitments to arguments
@@ -65,6 +67,7 @@ impl Timeable for ProdProver {
 }
 
 impl ProdProver {
+    ///Base Constructor
     pub fn new(
         c_A: Vec<RistrettoPoint>,
         A: Vec<Vec<Scalar>>,
@@ -82,6 +85,9 @@ impl ProdProver {
         }
     }
 
+    ///Prover method that creates the Product Proof while running,
+    ///A SVProof and a HadamProof and returns the final proof with
+    ///accompanying provers
     pub fn prove(
         &mut self,
         trans: &mut Transcript,
@@ -109,11 +115,12 @@ impl ProdProver {
         hadamard_prover.chall = self.chall.clone();
         let hadamard_time = hadamard_prover.start_time();
         let (zero_prover, hadamard_proof): (ZeroProver, HadamProof) = hadamard_prover.prove(trans);
+
         println!("\n");
         println!("Hadamard Proof Time:\t{}", hadamard_prover.elapsed(hadamard_time));
         println!("Hadamard Proof Size:\t{}", hadamard_proof.heap_size());
+
         //SINGLE_VALUE PRODUCT
-        //
         let mut sv_prover: SVProver = SVProver::new(c_b,
                                                     a_vec,
                                                     self.b,
@@ -124,6 +131,7 @@ impl ProdProver {
 
         let sv_time = sv_prover.start_time();
         let sv_proof: SVProof = sv_prover.prove(trans);
+
         println!("\n");
         println!("SV Product Proof Time:\t{}", sv_prover.elapsed(sv_time));
         println!("SV Product Proof Size:\t{}", sv_proof.heap_size());
@@ -131,14 +139,16 @@ impl ProdProver {
         (zero_prover,
          sv_prover,
          hadamard_prover,
-        ProdProof {
+         ProdProof {
             c_b: RistrettoPoint::random(&mut self.com_ref.rng),
             had_proof: hadamard_proof,
             sv_proof: sv_proof,
-        }
+         }
         )
     }
 
+    ///Verification method that takes the ProdProof with necessary provers
+    ///used in the creation of the proof: HadamProver -> ZeroProver, SVProver
     pub fn verify(
         &mut self,
         trans: &mut Transcript,

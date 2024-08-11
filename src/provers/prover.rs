@@ -8,7 +8,7 @@ use merlin::Transcript;
 
 use crate::arguers::CommonRef;
 
-use crate::vec_utils::VecUtil::scalar_to_str;
+use crate::utils::vec_utils::VecUtil::scalar_to_str;
 
 use crate::provers::{mexp_prover::{MexpProof, MexpOptimProof, MexpProver},
                         sv_prover::{SVProver},
@@ -157,8 +157,9 @@ impl ShuffleProver {
                                               rho_, 
                                               self.com_ref.clone());
 
+        mexp_prover.chall.x = x.clone();
         let mexp_time = mexp_prover.start_time();
-        let mexp_proof = mexp_prover.prove_optim(trans, x.clone(), self.mu);
+        let mexp_proof = mexp_prover.prove_optim(trans, self.mu);
 
         println!("\n");
         println!("Opt Mexp Proof Time:\t{}", mexp_prover.elapsed(mexp_time));
@@ -275,7 +276,7 @@ impl ShuffleProver {
 fn test_product_prover() {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
-    use crate::EGInp;
+    use crate::utils::enums::EGInp;
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 6;
@@ -398,7 +399,7 @@ fn test_product_prover() {
 fn test_prover_obs() {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
-    use crate::EGInp;
+    use crate::utils::enums::EGInp;
     use std::time::SystemTime;
     
     let mut rng = StdRng::seed_from_u64(2);//from_entropy();

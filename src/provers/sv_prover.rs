@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+//! Struct Proof and Prover for Single Value Product Argument
 use rust_elgamal::{Scalar, Ciphertext, IsIdentity};
 use std::iter;
 
@@ -22,15 +23,27 @@ use crate::utils::{utils::Challenges,
                     transcript::TranscriptProtocol,
                     errors::ProofError};
 
+
+///Data struct for final proof arguments
+///sent to the verification
 #[derive(Clone)]
-pub(crate) struct SVProof {
+pub struct SVProof {
+    ///Commitments to random blinding values
     c_d: RistrettoPoint,
+    ///Commitments to further blinded randomness
     c_sig: RistrettoPoint,
+    ///Commitments to weighted differences: 
+    ///sigma<sub>i+1</sub> - a<sub>i+1</sub> * sigma<sub>i</sub> - b<sub>i</sub> * d<sub>i+1</sub>
     c_del: RistrettoPoint,
+    ///`a` vector blinded by: ```a` = x*a + d```
     a_vec: Vec<Scalar>,
+    ///Factorization of a where the last element should be the product of a
     b_vec: Vec<Scalar>,
+    ///Blinding scalars modified for `a`
     r: Scalar,
+    ///Blinding scalars for factorized `a` values 
     s: Scalar,
+    ///Global challenge scalar
     x: Scalar,
 }
 
@@ -47,13 +60,22 @@ impl HeapSize for SVProof {
     }
 }
 
+///Struct for initial Single-Value Product Argument
+///
+///Main objective is to show Prod<sup>n</sup>(a_vec<sub>i</sub>) = b
 #[derive(Clone)]
 pub struct SVProver {
+    ///Commitments to the argument vector `a`
     c_A: RistrettoPoint,
+    ///Open values of the vector
     a_vec: Vec<Scalar>,
+    ///Result scalar from the product of `a`
     b: Scalar,
+    ///Blinding value for `a`
     r: Scalar,
+    ///Common Reference object for encryption and commitment
     com_ref: CommonRef,
+    ///Global random challenge scalars
     pub(crate) chall: Challenges
 }
 
@@ -61,6 +83,7 @@ impl Timeable for SVProver {
 }
 
 impl SVProver {
+    ///Base Constructor
     pub fn new(
         c_A: RistrettoPoint,
         a_vec: Vec<Scalar>,
@@ -78,6 +101,11 @@ impl SVProver {
         }
     }
 
+    ///Prove method that creates a SVProof
+    ///
+    ///Main method used is: to show consecutive multiplications of `a`
+    ///would equal `b`, even if the subsets of `a` are used as blinding values
+    ///for the product values.
     pub fn prove(
         &mut self,
         trans: &mut Transcript
@@ -116,8 +144,10 @@ impl SVProver {
 
         let open_delta: Vec<Scalar> = (0..n-1).map(|i|
                                                    sig_vec[i+1].clone()
+
                                                    - self.a_vec[i+1].clone()
                                                    * sig_vec[i].clone()
+
                                                    - b_vec[i].clone()
                                                    * d_vec[i+1].clone()
                                                 ).collect();
@@ -148,10 +178,10 @@ impl SVProver {
             r: r,
             s: s,
             x: x,
-            
         }
     }
 
+    ///Verify method that either fails or returns Ok
     pub fn verify(
         &mut self,
         trans: &mut Transcript,

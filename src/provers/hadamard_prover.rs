@@ -1,3 +1,4 @@
+//! Struct Proof and Prover for Hadamard Product Argument
 #![allow(non_snake_case)]
 use std::mem;
 
@@ -116,7 +117,8 @@ impl HadamProver {
                 )
     }
 
-    ///prove method that creates a HadamardProof
+    ///prove method that creates a HadamardProof and returns it with
+    ///accompanying provers
     ///
     ///Main method used works over the mathmathical expression
     ///
@@ -207,7 +209,6 @@ impl HadamProver {
             [&self.c_A[1..m], &[c_1].as_slice()].concat(),
             [&c_Di[0..m-1], &[c_D].as_slice()].concat(),
             HadamProver::exp_dot,
-            y.clone(),
             [&self.A.clone()[1..m], &[vec![-Scalar::one(); n]]].concat(),
             [&self.r.clone()[1..m], &[Scalar::zero()]].concat(),
             [D.clone().as_slice(), &[d]].concat(),
@@ -232,7 +233,8 @@ impl HadamProver {
         )
     }
     
-    ///verify method that verifies a HadamardProof
+    ///verify method that verifies a HadamardProof with the help of
+    ///the ZeroProver used in the creation of the proof
     pub fn verify(
         &mut self,
         trans: &mut Transcript,

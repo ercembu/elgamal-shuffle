@@ -1,3 +1,4 @@
+//! Struct Proof and Prover for Zero Product Argument
 #![allow(non_snake_case)]
 use rust_elgamal::{Scalar, Ciphertext, IsIdentity};
 use std::iter;
@@ -75,9 +76,6 @@ pub struct ZeroProver {
     ///injected from HadamardProver
     bi_map: fn(Vec<Scalar>, Vec<Scalar>, Scalar)->Scalar,
 
-    ///Challenge scalar y to be used in the bi_map
-    y: Scalar,
-
     ///Open value matrices, and their blinding factors
     ///A: Z<sup>nxm</sup>
     A: Vec<Vec<Scalar>>,
@@ -104,7 +102,6 @@ impl ZeroProver {
         c_Ai: Vec<RistrettoPoint>,
         c_Bi: Vec<RistrettoPoint>,
         bi_map: fn(Vec<Scalar>, Vec<Scalar>, Scalar)->Scalar,
-        y: Scalar,
         A: Vec<Vec<Scalar>>,
         r: Vec<Scalar>,
         B: Vec<Vec<Scalar>>,
@@ -115,7 +112,6 @@ impl ZeroProver {
             c_Ai: c_Ai,
             c_Bi: c_Bi,
             bi_map: bi_map,
-            y: y,
             A: A,
             r: r,
             B: B,
@@ -142,6 +138,8 @@ impl ZeroProver {
         trans.append_message(b"dom-sep", b"ZeroProof");
         let n: usize = self.A[0].len();
         let m: usize = self.A.len();
+
+        let y: Scalar = self.chall.y.clone();
 
         //Get random blinding scalar vectors for the arguments
         let a_0: Vec<Scalar> = (0..n).map(|_| self.com_ref.rand_scalar()).collect();
@@ -176,13 +174,11 @@ impl ZeroProver {
         let mut d_k: Vec<Scalar> = vec![Scalar::zero(); 2*m + 1];
 
         //This loop scheme allows diagonal sum of the mapped values,
-        //efficiently?
         for i in 0..=m {
             for j in 0..=m {
                 let k = m + i -j;
-
                 d_k[k] += (self.bi_map)(
-                    blind_A[i].clone(), blind_B[j].clone(), self.y.clone()
+                    blind_A[i].clone(), blind_B[j].clone(), y.clone()
                     );
             }
         }
@@ -255,6 +251,8 @@ impl ZeroProver {
         let m = (proof.c_D.len() - 1)/ 2;
         let n = proof.a_vec.len();
 
+        let y = self.chall.y.clone();
+
         assert!((proof.c_D[m+1] == 
                  self.com_ref.commit(vec![Scalar::zero()], Scalar::zero())));
 
@@ -286,7 +284,7 @@ impl ZeroProver {
                             );
 
 
-        let open_values: Scalar = (self.bi_map)(proof.a_vec, proof.b_vec, self.y.clone());
+        let open_values: Scalar = (self.bi_map)(proof.a_vec, proof.b_vec, y.clone());
 
         let open_D = self.com_ref.commit(vec![open_values], proof.t);
 
@@ -389,7 +387,6 @@ fn test_base() {
         c_A,
         c_B,
         HadamProver::exp_dot,
-        y,
         a.to_col(),
         r,
         b.to_col(),
@@ -397,6 +394,7 @@ fn test_base() {
         com_ref.clone()
         );
 
+    zero_prover.chall.y = y;
     let mut zero_proof: ZeroProof = zero_prover.prove(&mut prover_transcript);
 
     let mut verifier_transcript = Transcript::new(b"testZeroProof");

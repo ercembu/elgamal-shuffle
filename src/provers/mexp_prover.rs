@@ -1,3 +1,4 @@
+//! Struct Proof and Prover for Multi-Exponentiation Argument
 #![allow(non_snake_case)]
 use std::mem;
 use rust_elgamal::{Scalar, Ciphertext};
@@ -24,15 +25,24 @@ use crate::utils::{utils::Challenges,
                     errors::ProofError,
                     enums::EGInp};
 
+///Data struct for the non optimized mexp arguments
 #[derive(Clone, Default)]
 pub struct MexpProof {
+    ///Commitment to the beggining blinding vector
     pub(crate) c_A0: RistrettoPoint,
+    ///Commitment to the blinding values
     pub(crate) c_Bk: Vec<RistrettoPoint>,
+    ///Message products of the blinded diagonals
     pub(crate) Ek  : Vec<Ciphertext>,
+    ///Blinded column vectors
     pub(crate) a_  : Vec<Scalar>,
+    ///Blinding value for the column vectors
     pub(crate) r   : Scalar,
+    ///X Challenged blinding values
     pub(crate) b   : Scalar,
+    ///X Challenged blinding values for b values
     pub(crate) s   : Scalar,
+    ///X Challenged ElGamal Blinding Values
     pub(crate) tau : Scalar,
 }
 
@@ -50,13 +60,21 @@ impl HeapSize for MexpProof {
 
 }
 
+///Data Struct for Optimized final Mexp Proof
+///Optimization yields square root N smaller proof size while taking square root N more time
 #[derive(Clone)]
 pub struct MexpOptimProof {
+    ///Committed Blinding values for the ElGamal messages
     pub(crate) c_b: Vec<RistrettoPoint>,
+    ///Result of the Blinded Diagonal Product
     pub(crate) E_k: Vec<Ciphertext>,
+    ///Open Blinding values for elGamal messages
     pub(crate) b: Scalar,
+    ///Hiding value for the commitment of the blinding values
     pub(crate) s: Scalar,
+    ///X Blinded Messages
     pub(crate) open_C: Ciphertext,
+    ///Diagonal Message challenged by x and hidden via b values
     pub(crate) C_: Ciphertext,
 }
 impl HeapSize for MexpOptimProof {
@@ -96,13 +114,15 @@ pub struct MexpProver {
     /// Common reference key
     com_ref: CommonRef,
 
-    chall: Challenges,
+    ///Global Challenges
+    pub(crate) chall: Challenges,
 }
 
 impl Timeable for MexpProver {
 }
 
 impl MexpProver {
+    ///Base Constructor
     pub fn new(
         C_mat: Vec<Vec<Ciphertext>>,
         C: Ciphertext,
@@ -123,12 +143,11 @@ impl MexpProver {
             chall: Challenges::default(),
         }
     }
-    ///C_x = ElG(1;rho)C'^b
-    ///c_b = com(b, s)
+
+    ///Prover method for a non-optimized proof
     pub(crate) fn prove(
         &mut self,
         trans: &mut Transcript,
-        x: Scalar,
     ) -> MexpProof {
 
         //Format to matrix m x n: m * n = N
@@ -185,11 +204,9 @@ impl MexpProver {
 
         let Ek: Vec<Ciphertext> = Gbk;
 
-        //Challenge: x ← Z∗q.
-
-        self.chall.x = x.clone();
 
 
+        let x = self.chall.x.clone();
         let x_: Vec<Scalar> = (1..=m).map(|exp| x.pow(exp.try_into().unwrap())).collect();
 
         let Ax: Vec<Scalar> = self.A.mult(&x_);
@@ -221,6 +238,7 @@ impl MexpProver {
 
     }
 
+    ///Verifier method for a non optimized proof
     pub fn verify(
         &mut self,
         proof: MexpProof,
@@ -266,17 +284,21 @@ impl MexpProver {
 
         Ok(())
     }
-    pub(crate) fn prove_optim(
+
+    ///Prover method for an optimized Mexp Argument
+    pub fn prove_optim(
         &mut self,
         trans: &mut Transcript,
-        x: Scalar,
         mu: usize,
     ) -> MexpOptimProof {
         let (m, n) = self.C_mat.size();
         let m_: usize = m / mu;
 
+        let x = self.chall.x.clone();
+
         trans.mexp_domain_sep(m.clone() as u64, (m/2).try_into().unwrap());
 
+        //Create blinding vectors
         let mut b_: Vec<Scalar> = vec![self.com_ref.rand_scalar(); 2*mu -1];
         let mut s_: Vec<Scalar> = vec![self.com_ref.rand_scalar(); 2*mu -1];
         let mut tau_: Vec<Scalar> = vec![self.com_ref.rand_scalar(); 2*mu -1];
@@ -289,6 +311,7 @@ impl MexpProver {
         let c_bk: Vec<RistrettoPoint> = (0..=2*mu -2).map(|k|
                                                           self.com_ref.commit(vec![b_[k].clone()], s_[k].clone())
                                                           ).collect();
+        //Base Ciphertexts for diagonal products
         let mut Gbk: Vec<Ciphertext> = b_.iter()
                                         .zip(tau_.iter())
                                         .map(|(_b, _tau)| {
@@ -296,6 +319,7 @@ impl MexpProver {
                                                                   ,_tau)
                                         }).collect();
 
+        //Diagonal Operations
         for i in 1..=mu {
             for j in 1..=mu {
                 let k = j + mu - i - 1 ;
@@ -311,14 +335,17 @@ impl MexpProver {
         
 
 
+        //Exponentiatied challenges
         let x_: Vec<Scalar> = (0..=2*mu -2).map(|exp| x.pow(exp.try_into().unwrap())).collect();
 
+        //Challenged blinding values
         let b: Scalar = b_.dot(&x_.clone());
         let s: Scalar = s_.dot(&x_.clone());
+        let rho_: Scalar = tau_.dot(&x_.clone());
 
+        //Challenging the initial arguments
         let mut a_: Vec<Vec<Scalar>> = vec![];
         let mut r_: Vec<Scalar> = vec![];
-        let rho_: Scalar = tau_.dot(&x_.clone());
 
         for l in 1..=m_ {
             a_.push((1..=mu).fold(vec![Scalar::zero(); self.A[0].len()],
@@ -338,14 +365,17 @@ impl MexpProver {
         let mut C_l: Vec<Vec<Ciphertext>> = vec![];
         let mut c_A_prime: Vec<RistrettoPoint> = vec![];
 
+        //Base Message for diagonal products
         let G_b: Ciphertext = self.com_ref.encrypt(&EGInp::Scal(-b.clone()) 
                                                               ,&Scalar::zero()
                                                   );
+        //Challenged Diagonal Messages
         let E_x: Ciphertext = E_k.clone().as_slice().pow(x_.clone().as_slice());
 
         let C_prime: Ciphertext = G_b + E_x;
 
 
+        //Various challengings
         for l in 1..=m_ {
             C_l.push(
                 (1..mu).fold(self.C_mat[mu*l -1].clone(),
@@ -371,13 +401,13 @@ impl MexpProver {
                                                               ,&rho_.clone()
                                                   );
 
+        //Mexp of the initial arguments
         let open_C: Ciphertext = C_l.iter()
             .zip(a_.iter())
             .fold(base, 
                   |acc, (c, a)| acc + c.as_slice().pow(a.as_slice())
                   );
 
-        self.chall.x = x.clone();
         MexpOptimProof {
             c_b: c_bk,
             E_k: E_k,
@@ -387,6 +417,8 @@ impl MexpProver {
             C_: C_prime,
         }
     }
+    
+    ///Verifier for the optimized Mexp Proof
     pub fn verify_optim(
         &mut self,
         proof: MexpOptimProof,
@@ -464,10 +496,12 @@ fn test_mexp_base_obs() {
             cr.clone()
         );
 
-    let now = mexp_prover.start_time();
     let x: Scalar = cr.rand_scalar();
+    mexp_prover.chall.x = x;
+
+    let now = mexp_prover.start_time();
     let mut prover_transcript = Transcript::new(b"testMexpProof");
-    let mexp_proof = mexp_prover.prove(&mut prover_transcript, x.clone());
+    let mexp_proof = mexp_prover.prove(&mut prover_transcript);
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
 
     println!("Base Mexp Proof Size:\t{}", &mexp_proof.heap_size());
@@ -541,8 +575,9 @@ fn test_mexp_optim() {
         );
 
     let x: Scalar = cr.rand_scalar();
+    mexp_prover.chall.x = x.clone();
     let mut prover_transcript = Transcript::new(b"testMexpProof");
-    let mexp_proof = mexp_prover.prove_optim(&mut prover_transcript, x.clone(),
+    let mexp_proof = mexp_prover.prove_optim(&mut prover_transcript,
                                                 mu);
     let mut verifier_transcript = Transcript::new(b"testMexpProof");
 

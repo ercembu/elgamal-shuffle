@@ -1,3 +1,4 @@
+//! Main file exampling setup and parameters
 #![allow(warnings)]
 #![allow(non_snake_case)]
 #![allow(warnings)]
@@ -34,21 +35,26 @@ fn main() {
     let mut rng = StdRng::from_entropy();
     let mut cr = arguers::CommonRef::new(N as u64, rng);
 
+    //Create Open Deck from scalars
     let deck: Vec<Scalar> = (0..N).map(|card| Scalar::from(card as u64))
                                     .collect();
+    //Get blinding values for the deck
     let deck_r: Vec<Scalar> = (0..N).map(|_| cr.rand_scalar()).collect();
+    //Encrypt the decks in ElGamal
     let C_deck: Vec<Ciphertext> = deck.iter()
-                                                .zip(deck_r.clone())
-                                                .map(|(card, r)| cr.encrypt(&EGInp::Scal(card.clone()), 
-                                                                            &r
-                                                                )
-                                                )
-                                            .collect();
+                                        .zip(deck_r.clone())
+                                        .map(|(card, r)| 
+                                             cr.encrypt(&EGInp::Scal(card.clone()), &r)
+                                        )
+                                .collect();
 
+    //Get a random permutation
     let permutation: Vec<u64> = cr.rand_perm(&(1..=(N as u64)).collect());
 
+    //Get more blinding values for hiding the permuted cards
     let rho: Vec<Scalar> = (0..N).map(|_| cr.rand_scalar()).collect();
 
+    //Permute the cards while hiding them with another ElGamal Encryption
     let C_permd: Vec<Ciphertext> = permutation.iter()
                                                 .zip(rho.iter())
                                                 .map(|(pi, r)| {
@@ -59,6 +65,7 @@ fn main() {
                                                 )
                                                 .collect();
 
+    //Create the main shuffle prover
     let mut prover_transcript = Transcript::new(b"ShuffleProof");
     let mut shuffle_prover = prover::ShuffleProver::new(
                             m,
@@ -71,6 +78,7 @@ fn main() {
                             cr
                         );
                                 
+    //Recieve the provers used in the argument and the final proof
     let (mut zero_prover,
          mut sv_prover,
          mut hadam_prover,
@@ -78,8 +86,10 @@ fn main() {
          mut mexp_prover,
          mut shuffle_proof) = shuffle_prover.prove(&mut prover_transcript);
 
+    //Create a clean transcript for the verification
     let mut verifier_transcript = Transcript::new(b"ShuffleProof");
 
+    //Assert verification returns Ok
     assert!(shuffle_prover
             .verify(&mut verifier_transcript, shuffle_proof, 
                     zero_prover,
