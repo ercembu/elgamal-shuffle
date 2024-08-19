@@ -116,11 +116,10 @@ Rust’s strict safety guarantees, combined with its ability to produce highly o
 
 \subsubsection{Advantages of a Rust Implementation}
 A Rust implementation of the Bayer-Groth shuffle argument promises several advantages:
-\begin[itemize]
-    \item \textbf{Memory Safety:} Rust's ownership and borrowing system ensures that the implementation is free from
-            common memory related vulnerabilities.
+\begin{itemize}
+    \item \textbf{Memory Safety:} Rust's ownership and borrowing system ensures that the implementation is free from common memory related vulnerabilities.
      \item \textbf{Performance:} Rust’s ability to produce low-level, high-performance code makes it suitable for resource-intensive cryptographic operations.
-\end[itemize]
+\end{itemize}
 
 \section{Objectives}
 The combination of Rust's safety and performance features with the efficiency and security of the Bayer-Groth shuffle argument
@@ -160,10 +159,18 @@ $C$ is the product of a set of known ciphertexts $C_1,...,C_N$ raised to a set o
 hidden committed values. \\ 
 By reducing this bottleneck sublinearly, the argument 
 gains significant improvement in performance ($\mathcal{O}(\sqrt{N})$).\\
-They also provide other optimization and minor improvements over the prover computations.
-
+They also provide other optimization and minor improvements over the prover computations.\\
 The algorithms used in the Bayer-Groth paper construct the backbone of our library,
-with optimizations that are products of using native Rust and it's efficiency.
+with optimizations that are products of using native Rust and it's efficiency.\\
+Specifically the algorithm consists of 6 proof schemes, some used as base proofs for others:
+\begin{itemize}
+	\item \textbf{Shuffle Argument:} The overall argument proving a permutation's correctness on encrypted set of values,\\Constructs Multi-Exp and Product Arguments.
+	\item \textbf{Multi-Exponentiation Argument:} The main improvement of the study, argument showing correctness of prime-order group exponentiations.
+	\item \textbf{Product Argument:} The argument proving the product of certain commited vector values having a particular product,\\Constructs Hadamard Product and Single Value Product Arguments.
+	\item \textbf{Hadamard Product Argument:} Argument that shows for vectors of certain commited values we have a particular result vector for their hadamard product.\\Constructs Zero Argument.
+	\item \textbf{Zero Argument:} For two set of commited vectors and a bilinear mapping of two vectors to scalar, argument that shows the resulting operation equals $0$. Important for showing equality via difference.
+	\item \textbf{Single Value Product Argument:} a 3-move argument of knowledge of commited single values having a particular product.
+\end{itemize}
 
 \section{Existing Solutions}
 \subsection{Mental Poker}

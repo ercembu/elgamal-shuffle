@@ -18,69 +18,79 @@
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \@writefile{toc}{\contentsline {chapter}{Abstract}{i}{chapter*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {chapter}{Acknowledgements}{ii}{chapter*.2}\protected@file@percent }
+\citation{zk}
+\citation{bgshuffle}
 \@writefile{toc}{\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
 \@writefile{toc}{\contentsline {section}{\numberline {1.1}Background}{1}{section.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {1.2}Problem Statement}{1}{section.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {1.3}Objectives}{1}{section.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {1.4}Thesis Structure}{1}{section.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.1}Zero-Knowledge Proofs}{1}{subsection.1.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.2}Bayer-Groth Shuffle Argument}{1}{subsection.1.1.2}\protected@file@percent }
+\citation{rust}
+\citation{rust}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.3}The Rust Programming Language}{2}{subsection.1.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Safety and Performance}{2}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1.4}Previous Implementations and the Need for Rust}{2}{subsection.1.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Advantages of a Rust Implementation}{2}{section*.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.2}Objectives}{3}{section.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.3}Thesis Structure}{3}{section.1.3}\protected@file@percent }
 \citation{bgshuffle}
+\@writefile{toc}{\contentsline {chapter}{\numberline {2}Former Literature}{5}{chapter.2}\protected@file@percent }
+\@writefile{lof}{\addvspace {10\p@ }}
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {2.1}Source Material}{5}{section.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.1}Efficient ZK Argument for Correctness of a Shuffle}{5}{subsection.2.1.1}\protected@file@percent }
 \citation{mentalpoker}
 \citation{Barnett}
 \citation{arkworks}
-\@writefile{toc}{\contentsline {chapter}{\numberline {2}Former Literature}{2}{chapter.2}\protected@file@percent }
-\@writefile{lof}{\addvspace {10\p@ }}
-\@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {2.1}Source Material}{2}{section.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1.1}Efficient ZK Argument for Correctness of a Shuffle}{2}{subsection.2.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2.2}Related Work}{2}{section.2.2}\protected@file@percent }
 \citation{bgmixnet}
-\@writefile{toc}{\contentsline {section}{\numberline {2.3}Existing Solutions}{3}{section.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.1}Mental Poker}{3}{subsection.2.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.2}Bayer-Groth Mixnet}{3}{subsection.2.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3.3}Practical Ad-Hoc Implementations}{3}{subsection.2.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {3}Methodology}{4}{chapter.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2.2}Existing Solutions}{6}{section.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.1}Mental Poker}{6}{subsection.2.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.2}Bayer-Groth Mixnet}{6}{subsection.2.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2.3}Practical Ad-Hoc Implementations}{7}{subsection.2.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {3}Methodology}{8}{chapter.3}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {3.1}Important Related Concepts}{4}{section.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}El Gamal Encryption}{4}{subsection.3.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}Pedersen Commitment}{4}{subsection.3.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.3}Homomorphic Property}{4}{subsection.3.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3.2}Research Design}{4}{section.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}Ristretto Points}{4}{subsection.3.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Prime-Order Group Properties}{4}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.1}Important Related Concepts}{8}{section.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.1}El Gamal Encryption}{8}{subsection.3.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.2}Pedersen Commitment}{8}{subsection.3.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1.3}Homomorphic Property}{8}{subsection.3.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3.2}Research Design}{8}{section.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2.1}Ristretto Points}{8}{subsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Prime-Order Group Properties}{8}{section*.8}\protected@file@percent }
 \citation{dalek:curve}
-\@writefile{toc}{\contentsline {subsubsection}{Unique Encoding and Decoding}{5}{section*.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{Implementation of Choice}{5}{section*.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {4}Implementation}{6}{chapter.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Unique Encoding and Decoding}{9}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{Implementation of Choice}{9}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {4}Implementation}{10}{chapter.4}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {4.1}System Design}{6}{section.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4.2}Implementation Details}{6}{section.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {5}Results}{7}{chapter.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.1}System Design}{10}{section.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4.2}Implementation Details}{10}{section.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {5}Results}{11}{chapter.5}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {chapter}{\numberline {6}Discussion}{8}{chapter.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {6}Discussion}{12}{chapter.6}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {6.1}Analysis of Results}{8}{section.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6.2}Implications}{8}{section.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{9}{chapter.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.1}Analysis of Results}{12}{section.6.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6.2}Implications}{12}{section.6.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{13}{chapter.7}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\@writefile{toc}{\contentsline {section}{\numberline {7.1}Conclusion}{9}{section.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {7.2}Future Work}{9}{section.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.1}Conclusion}{13}{section.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7.2}Future Work}{13}{section.7.2}\protected@file@percent }
 \bibstyle{IEEEtran}
 \bibdata{thesis}
-\bibcite{bgshuffle}{1}
-\bibcite{mentalpoker}{2}
-\bibcite{Barnett}{3}
-\bibcite{arkworks}{4}
-\bibcite{bgmixnet}{5}
-\bibcite{dalek:curve}{6}
-\@writefile{toc}{\contentsline {chapter}{References}{10}{section.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {chapter}{\numberline {A}Appendix A}{11}{appendix.A}\protected@file@percent }
+\bibcite{zk}{1}
+\bibcite{bgshuffle}{2}
+\bibcite{rust}{3}
+\bibcite{mentalpoker}{4}
+\bibcite{Barnett}{5}
+\bibcite{arkworks}{6}
+\bibcite{bgmixnet}{7}
+\bibcite{dalek:curve}{8}
+\@writefile{toc}{\contentsline {chapter}{References}{14}{section.7.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {chapter}{\numberline {A}Appendix A}{15}{appendix.A}\protected@file@percent }
 \@writefile{lof}{\addvspace {10\p@ }}
 \@writefile{lot}{\addvspace {10\p@ }}
-\gdef \@abspage@last{18}
+\gdef \@abspage@last{22}
