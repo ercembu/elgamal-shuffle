@@ -74,16 +74,78 @@ acknowledgements here.
 
 \chapter{Introduction}
 \section{Background}
-background here.
+\subsection{Zero-Knowledge Proofs}
+Zero-knowledge proofs (ZKPs) are a fundamental concept in cryptography, enabling one party 
+(the prover) to demonstrate knowledge of a particular piece of information to another party 
+(the verifier) without revealing the information itself.\\
 
-\section{Problem Statement}
-problem statement here.
+
+This concept, first introduced by Goldwasser, Micali, and Rackoff\cite{zk}, has since become 
+an important part of privacy-preserving cryptographic protocols. 
+ZKPs are widely used in applications where privacy and security are paramount, 
+such as digital signatures, identity verification, and secure voting systems.
+
+\subsection{Bayer-Groth Shuffle Argument}
+The Bayer-Groth shuffle argument\cite{bgshuffle}, is a specific type of zero-knowledge proof that
+allows for the verification of correctness for a shuffle without revealing 
+the underlying permutation or the original values. \\
+This protocol is particularly useful in scenarios where data must be anonymized or shuffled 
+securely, such as in electronic voting systems, secure auctions, and mental card games. \\
+
+It enables a prover to demonstrate that a set of ciphertexts (encrypted values) is a valid 
+permutation of another set of ciphertexts, with minimal computational and communication overhead.
+The protocol achieves this by leveraging homomorphic encryption and prime order groups, ensuring that the shuffle's correctness can be verified without revealing any sensitive information.
+
+\subsection{The Rust Programming Language}
+Rust\cite{rust} is a near low-level programming language known for its emphasis on safety, concurrency and performance.
+Designed to ensure properties that might be overlooked otherwise such as memory safety and
+reference efficiency, Rust has quickly gained popularity in software development. 
+Particularly for applications where performance and security are critical.
+
+\subsubsection{Safety and Performance}
+Rust's ownership model, which enforces strict rules on how memory is managed, ensures that programs
+are both safe and efficient\cite{rust}. This is particularly important in cryptographic applications,
+where errors in memory management can lead to vulnerabilities and exploits.\\
+Rust's zero-cost abstractions and fine-grained control over system resources make it an ideal
+choice for implementing complex cryptographic protocols, such as the Bayer-Groth shuffle argument.
+\subsection{Previous Implementations and the Need for Rust}
+While the Bayer-Groth shuffle argument has been implemented in various programming languages, 
+there has been a growing interest in leveraging Rust’s unique features for cryptographic applications. \\
+Existing implementations in languages like C++ or Python often face challenges related to memory safety, performance, or ease of concurrency. 
+Rust’s strict safety guarantees, combined with its ability to produce highly optimized binaries, make it an attractive choice for implementing cryptographic protocols.
+
+\subsubsection{Advantages of a Rust Implementation}
+A Rust implementation of the Bayer-Groth shuffle argument promises several advantages:
+\begin[itemize]
+    \item \textbf{Memory Safety:} Rust's ownership and borrowing system ensures that the implementation is free from
+            common memory related vulnerabilities.
+     \item \textbf{Performance:} Rust’s ability to produce low-level, high-performance code makes it suitable for resource-intensive cryptographic operations.
+\end[itemize]
 
 \section{Objectives}
-research objectives here.
+The combination of Rust's safety and performance features with the efficiency and security of the Bayer-Groth shuffle argument
+suggests a Rust-based implementation would be beneficial for the state of the art.
+\\Such an implementation would not only contribute to the academic and practical understanding of
+zero-knowledge proofs but also provide a robust and efficient tool for real-world cryptographic applications.
 
 \section{Thesis Structure}
-thesis structure here.
+In the remaining parts of the paper we will first talk about the source material the Bayer-Groth
+shuffle argument, briefly talking about how they achieved their optimized shuffle argument.
+Then move onto the existing implementations of the algorithm and their prospects and differences,
+to ours. \\
+
+In the Methodology we will start by examining important related concepts such as El Gamal Encryption,
+Pedersen Commitments and Homomorphic Properties and how we leverage them, continue with 
+the research design, the choices of implementations for these properties.\\
+
+In the Implementation which will take up most of the content, we will explain our structure and 
+try to show how we utilized, Rust's efficiency and safety for certain important parts of the protocol.\\
+
+Then we will end our discussion with performance metrics we have collected and their significance,
+followed by talking about what could be future additions to the library we have provided.
+
+
+
 
 \chapter{Former Literature}
 \section{Source Material}
@@ -102,8 +164,6 @@ They also provide other optimization and minor improvements over the prover comp
 
 The algorithms used in the Bayer-Groth paper construct the backbone of our library,
 with optimizations that are products of using native Rust and it's efficiency.
-\section{Related Work}
-Your related work here.
 
 \section{Existing Solutions}
 \subsection{Mental Poker}
