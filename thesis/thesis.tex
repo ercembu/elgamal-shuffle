@@ -87,6 +87,21 @@ thesis structure here.
 
 \chapter{Former Literature}
 \section{Source Material}
+\subsection{Efficient ZK Argument for Correctness of a Shuffle}
+In 2012, Bayer and Groth\cite{bgshuffle} presented an algorithm with sublinear 
+communication complexity for shuffling a deck of homomorphically encrypted values.
+
+According to their findings, operations for an efficient sublinear size argument
+show linearity in group elements when they are "in the exponent". \\
+Using this adaptation, they constructed an efficient multi-exponentiation argument that a ciphertext
+$C$ is the product of a set of known ciphertexts $C_1,...,C_N$ raised to a set of
+hidden committed values. \\ 
+By reducing this bottleneck sublinearly, the argument 
+gains significant improvement in performance ($\mathcal{O}(\sqrt{N})$).\\
+They also provide other optimization and minor improvements over the prover computations.
+
+The algorithms used in the Bayer-Groth paper construct the backbone of our library,
+with optimizations that are products of using native Rust and it's efficiency.
 \section{Related Work}
 Your related work here.
 
@@ -109,7 +124,7 @@ Our library works without these limitations as well.
 \subsection{Practical Ad-Hoc Implementations}
 While there are a few more implementations of the argument available online, 
 they seem to either not be comprehensive enough for a comparison,
-or small code used a injection for other projects. Which we decided not to
+or small code used as injection for other projects. Which we decided not to
 mention for brevity's sake.
 
 \chapter{Methodology}
