@@ -506,12 +506,23 @@ fn test_mexp_base_obs() {
 
     println!("Base Mexp Proof Size:\t{}", &mexp_proof.heap_size());
 
-    assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
 
     match now.elapsed() {
        Ok(elapsed) => {
            // it prints '2'
            println!("Base Mexp Proof Time:\t{}", elapsed.as_millis());
+       }
+       Err(e) => {
+           // an error occurred!
+           println!("Error: {e:?}");
+       }
+   }
+    let now = mexp_prover.start_time();
+    assert!(mexp_prover.verify(mexp_proof, &mut verifier_transcript).is_ok());
+    match now.elapsed() {
+       Ok(elapsed) => {
+           // it prints '2'
+           println!("Base Mexp Verify Time:\t{}", elapsed.as_millis());
        }
        Err(e) => {
            // an error occurred!

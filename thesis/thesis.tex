@@ -6,6 +6,7 @@
 \usepackage{fancyhdr}
 \usepackage{hyperref}
 \usepackage{listings} % For code listings
+\usepackage{listings-rust}
 \usepackage{color}
 \usepackage{url}
 
@@ -162,7 +163,7 @@ gains significant improvement in performance ($\mathcal{O}(\sqrt{N})$).\\
 They also provide other optimization and minor improvements over the prover computations.\\
 The algorithms used in the Bayer-Groth paper construct the backbone of our library,
 with optimizations that are products of using native Rust and it's efficiency.\\
-Specifically the algorithm consists of 6 proof schemes, some used as base proofs for others:
+Specifically the algorithm consists of 6 proof schemes, some used as components for others:
 \begin{itemize}
 	\item \textbf{Shuffle Argument:} The overall argument proving a permutation's correctness on encrypted set of values,\\Constructs Multi-Exp and Product Arguments.
 	\item \textbf{Multi-Exponentiation Argument:} The main improvement of the study, argument showing correctness of prime-order group exponentiations.
@@ -171,6 +172,14 @@ Specifically the algorithm consists of 6 proof schemes, some used as base proofs
 	\item \textbf{Zero Argument:} For two set of commited vectors and a bilinear mapping of two vectors to scalar, argument that shows the resulting operation equals $0$. Important for showing equality via difference.
 	\item \textbf{Single Value Product Argument:} a 3-move argument of knowledge of commited single values having a particular product.
 \end{itemize}
+
+\section{Related Work}
+\subsection{Decaf: Eliminating cofactors through point compression}
+Decaf\cite{decaf} proposes a point compression format for elliptic curves over 
+large-characteristic fields. Which is an effective implementation of cofactor-4 elliptic curve points
+used by many state of the art cryptographic libraries.\\
+Prime order groups created by these elliptic curves show additive homomorphism. Which is a significant
+improvement on performance when it comes to implementation of complex proofs.
 
 \section{Existing Solutions}
 \subsection{Mental Poker}
@@ -197,14 +206,86 @@ mention for brevity's sake.
 \chapter{Methodology}
 \section{Important Related Concepts}
 
-\subsection{El Gamal Encryption}
+\subsection{ElGamal Encryption}
+ElGamal encryption is a public-key cryptosystem based on the Diffie-Hellman key exchange\cite{elgamal}. The security of the encryption relies on the difficulty of solving the discrete logarithm problem in large cyclic groups. Without having the private key $x$, it is computationally infeasible to derive the plaintext from the ciphertext.
+\subsubsection{Key Components}
+\begin{itemize}
+	\item \textbf{Private Key:} A randomly chosen integer $x$, which is used to generate the public key. Needs to be secret.
+	\item \textbf{Public Key:} Consists of a large prime number $p$, a genarator $g$ of a multiplicative group modulo $p$, and a public key $y$, where $y = g^x mod p$.
+\end{itemize}
+\subsubsection{Encryption Process}
+To encrypt a message $m$(represented as a number), the sender:
+\begin{itemize}
+	\item Chooses a random integer $k$, which serves as the ephemeral key.
+	\item Computes the ciphertext pair $(c_1, c_2)$ as follows:
+		\begin{itemize}
+			\item $c_1 = g^k\, mod p$
+			\item $c_2 = m . y^k\, mod p$
+		\end{itemize}
+\end{itemize}
+The ciphertext $(c_1, c_2)$ is then sent to the recipient.
+\subsubsection{Decryption Process}
+The recipient, who knows the private key $x$, decrypts the ciphertext by:
+\begin{itemize}
+	\item Computing $s = c_{1}^{x}\, mod p$.
+	\item Recovering the original message $m$ by computing $m = c_2 / s\, mod p$.
+\end{itemize}
+\subsubsection{Applications}
+ElGamal encryption is used in various cryptographic protocols, including digital signatures and encryption schemes. 
+Its ability to support homomorphic operations makes it particularly useful in privacy-preserving applications, 
+such as secure voting systems and zero-knowledge proofs.
 \subsection{Pedersen Commitment}
+Pedersen commitments are a cryptographic technique used to commit to a value 
+while keeping it hidden, with the ability to later reveal the committed value. 
+They are widely used in cryptographic protocols, including zero-knowledge proofs, 
+due to their strong security properties and the ability to support homomorphic operations.
+\subsubsection{Key Components}
+\begin{itemize}
+	\item \textbf{Group Parameters:} Pedersen commitments rely on a cyclic group $G$ of prime order $q$, where the discrete logarithm problem is hard. Two generators $g$ and $h$ of the group are publicly known.
+	\item \textbf{Commitment Value:} A value $C$ that commits to a message $m$ using a random blinding factor $r$.
+\end{itemize}
+\subsubsection{Commitment Process}
+To commit a message $m$ (which is typically an integer modulo $q$), the commiter:
+\begin{itemize}
+	\item Chooses a random blinding factor $r$ uniformly from $\mathbb{Z}_q$.
+	\item Computes the commitment $C$ as:\\ $C\,=\,g^m\,.\,h^r\,modq$
+\end{itemize}
+The commitment $C$ is then published, while $m$ and $r$ are kept secret.
+\subsubsection{Revealing the Commitment}
+To reveal the commitment, committer discloses the values $m$ and $r$. The verifier checks the valididty by computing $C'\,=\,g^m\,.\,h^r\,modq$ and ensuring that $C'\,=\,C$.
+\subsubsection{Security}
+\begin{itemize}
+	\item \textbf{Hiding:} The commitment $C$ does not reveal any information about the message $m$ due to the random blinding factor $r$. This ensures privacy until the committer chooses to reveal the value.
+	\item \textbf{Binding:} Once $C$ is published, the committer cannot change the value of $m$ without being detected, as doing so would require finding a different pair $(m,\,r)$ that produces the same commitment, which is infeasible due to the hardness of the discrete logarithm problem.
+\end{itemize}
 \subsection{Homomorphic Property}
+Homomorphic properties in cryptography refer to the ability of certain 
+operations on encrypted data to produce a valid result that, 
+when decrypted, matches the outcome of performing the same operations on the plaintext.\\
+This characteristic is particularly valuable in scenarios where computations need to be performed on data without exposing it, preserving both privacy and security.\\
+The Shuffle argument utilizes the homomorphic property of both the Elgamal encryption and the Pedersen commitment.
+\subsubsection{Homomorphism of Pedersen Commitments}
+Pedersen commitments exhibit a key homomorphic property: the product of two commitments is itself a commitment to the sum of the original messages.
+Mathematically, if $C_1\,=\,g^{m_1}\,.\,h^{r_1}$ and $C_2\,=\,g^{m_2}\,.\,h^{r_2}$, then:\\ 
+\begin{center}
+$C_1\,.\,C_2\,=\,g^{m_1 + m_2}\,.\,h^{r_1 + r_2}$
+\end{center}
+This allows for multiple commited values to be combined in a way that reflects their arithmetic sum without revealing the individual values themselves.
+\subsubsection{Homomorphims of ElGamal Ciphertexts}
+The shuffle argument involves showing that a set of ciphertexts (encrypted values) is a valid permutation of another set without revealing the permutation or the underlying plaintexts.\\
+Homomorphims helps us achieve this via providing committed values that we can operate over rather than needing to reveal them in any way. Mathmetically:\\
+The ciphertext $(c_1,\,c_2)$ of plaintext $m_1\,.\,m_2$:\\
+\begin{center}
+$(c_1, c_2) = \left( g^{k_1 + k_2} \mod p, \ (m_1 \cdot m_2) \cdot y^{k_1 + k_2} \mod p \right)$
+\end{center}
+with $k_1$ and $k_2$ being the respective ephemeral keys.\\
+Most of the proof construction algorithms' verification and security is assured 
+by using these properties for our arguments.
 
 \section{Research Design}
 \subsection{Ristretto Points}
 A Ristretto Point is a cryptographic construction designed to create a
-prime-order group from elliptic curves, 
+prime-order group from elliptic curves using Decaf on Edwards Curves, 
 enhancing the security and efficiency of cryptographic operations. 
 In the context of mental card games, Ristretto Points 
 enable players to prove knowledge or 
@@ -214,7 +295,7 @@ possession of certain cards without revealing the cards themselves.
 Ristretto Points provide a prime-order group that simplifies 
 mathematical operations and ensures predictable, 
 secure behavior in cryptographic protocols.
-A prime-order group eliminates issues related to cofactor multiplication, which can complicate the implementation of secure protocols.
+A prime-order group over elliptic curves eliminates issues related to cofactor multiplication, which can complicate the implementation of secure protocols.
 In mental card games, this property ensures that each card, represented as a Ristretto Point, interacts securely and predictably within the proof system.
 
 \subsubsection{Unique Encoding and Decoding}
@@ -231,14 +312,152 @@ implementations of all kinds of cryptographic proofs and arguments.(bulletproofs
 
 
 \chapter{Implementation}
+\section{Commitments and Encryptions}
+Since Ristretto points are defined in elliptic curve groups, it differs from the usual uses of ElGamal over a finite field where the homomorphism is multiplicative. 
+In elliptic curve groups homomorphism becomes additive\cite{decaf}. 
+\\This means when we talk about multiplication of a scalar and a group point we are not talking about cofactor multiplication, 
+we are talking about raising the group point to a scalar power. Because of the same reason we don't have addition between 
+a scalar value and a group point, since group point addition is reserved for "actual" multiplication of the points.
+By having both of our Pedersen commitments and ElGamal encrpytions over the same prime order group we can have seamless interaction between them. 
+Here are some of the terms we will use according to our implementation before we get deeper into our definitions:
+\begin{itemize}
+	\item the term Scalar for our open integers which are not commited or hidden in anyway, 
+	\item the term Point when it comes to any elliptic curve point which can be achieved via: 
+		\begin{itemize}
+			\item commiting a scalar with a random blinding scalar results in one point,
+			\item multiplying a scalar with a point (raising the point to a power)
+			\item adding two points (multiplying two prime order points)
+		\end{itemize}
+	\item the term Ciphertext which is a tuple of points over the ristretto elliptic curve, can be achieved via:
+		\begin{itemize}
+			\item encrypting a scalar which needs to be multiplied with the base point first,
+			\item encrypting a point,
+		\end{itemize}
+\end{itemize}
+
+These properties are provided to us via the Ristretto and elgamal-rust\cite{egrust} libraries.
 \section{System Design}
-system design here.
+We have decided to abstract each argument to:
+\begin{itemize}
+	\item a struct containing the initial public arguments and witnesses,
+	\item member prove function for the construction of the proof arguments,
+	\item member prove function that verifies the initial arguments with the constructed proof.
+\end{itemize}
+As such we have 6 "Provers" for each argument defined in Bayer-Groth, for the arguments injected into others
+the parent argument's constructed proof also contains the child argument's proof. This injection is paralleled
+in the verification step of the arguments, where the child prover is needed for the child verification
+so the overall verification becomes complete and secure.
+
+\subsection{Common Reference}
+To keep consistency within each of our arguments for our commitments and encryptions we decided to abstract 
+the Pedersen commitment generators and ElGamal encryption keys in a seperate struct. This components associated
+member functions also shouldered the responsibility for: 
+\begin{itemize}
+	\item returning random scalars from a shared rng, 
+	\item commiting scalars, vectors and matrices of scalars, 
+	\item encryption of scalar or point values.
+\end{itemize}
+Since Bayer-Groth defined their commitment scheme a bit differently, for completeness we also redefined 
+the encryption scheme in the Common Reference.
 
 \section{Implementation Details}
-implementation details here.
+\subsection{Provers}
+While being straight forward mathmetical implementations of the Bayer-Groth algorithms, Rust provides us with
+security by keeping the initial arguments explicitly immutable and fast batch operations due to it's efficient
+iterator and collection access implementations.
+This property is especially exploited when it comes to matrix operations.\\
+One example we will show of the provers is the multi-exponentiation argument since it has two different prove-verify
+implementations. The "optimized" version is called as such due to it being the main contributor to the efficiency in message size,
+while also being the main computation spender.
 
+As shown in table \ref{table:diagon} the diagonalization over a factor of the total number of elements,
+can look pretty straight forward once the index arithmatics are manipulated for efficiency.
+
+Since the matrix exponentiation here is purely defined via iterators in $pow()$, 
+the iterative recalling of this function is devoid of indexed memory access overhead.\\
+
+\begin{table}
+\begin{lstlisting}[language=Rust]
+let m = //factor of card count(effective column count)
+let mu = //Efficiency hyperparameter(Square root of N for optimal)
+let m_ = m / mu;
+//Base Ciphertexts for diagonal products
+//b_ and tau_ are random value scalar vectors
+let mut randomCT: Vec<Ciphertext> = b_.iter()
+	.zip(tau_.iter())
+	.map(|(_b, _tau)| {
+	    self.com_ref.encrypt(&EGInp::Scal(*_b) 
+				  ,_tau)
+	}).collect();
+
+//Diagonal Operations over mu
+for i in 1..=mu {
+    for j in 1..=mu {
+	let k = j + mu - i - 1 ;
+	randomCT[k] = (0..=m_ - 1).fold(randomCT[k],
+		    |acc, l|
+			acc + self.C_mat[mu * l + i - 1].pow(self.A[mu * l + j - 1])
+		   );
+            }
+        }
+\end{lstlisting}
+\caption{Diagonalization over $n\,X\,m$ matrix}
+\label{table:diagon}
+\end{table}
 \chapter{Results}
-results here.
+We have measured the time it takes for any of the arguments' proof and verification, while also recording the resulting proofs' memory size. 
+Even at first with low card count of $8 x 8\,=\,64$ in \ref{table:allresults} how the optimized version of multi-exponentiation is much more efficient in both size and time performance.\\
+Since the main improvement is the difference between this optimized and base versions we have more test results with different parameters in \ref{table:mexp}.
+\begin{table}
+	\begin{center}
+	\begin{tabular}{||c|c||}
+		\hline
+		Setup Time&41\\
+		Permutation Time&40\\
+		\hline
+		m&8\\
+		n&8\\
+		mu&1\\
+		\hline \hline
+
+		Shuffle Proof Size&10304\\
+		Shuffle Proof Time&702\\
+		Shuffle Verify Time&93\\
+		\hline
+		Opt Mexp Proof Size&1184\\
+		Opt Mexp Proof Time&102\\
+		Opt Mexp Verify Time&17\\
+
+		Base Mexp Proof Size&8224\\
+		Base Mexp Proof Time&551\\
+		Base Mexp Verify Time&88\\
+		\hline
+		Product Proof Size&1648\\
+		Product Proof Time&327\\
+		Product Verify Time&75\\
+		\hline
+		SV Product Proof Size&1088\\
+		SV Product Proof Time&31\\
+		SV Product Verify Time&18\\
+		\hline
+		Hadamard Proof Size&5280\\
+		Hadamard Proof Time&283\\
+		Hadamard Verify Time&57\\
+		\hline
+		Zero Proof Size&3680\\
+		Zero Proof Time&205\\
+		Zero Verify Time&47\\
+		\hline \hline
+	\end{tabular}
+	\end{center}
+	\caption{Performance Metrics, Time in ms, Size as bytes}
+	\label{table:allresults}
+\end{table}
+
+\begin{table}
+	\caption{Multi-Exponentiation Trials}
+	\label{table:mexp}
+\end{table}
 
 \chapter{Discussion}
 \section{Analysis of Results}
