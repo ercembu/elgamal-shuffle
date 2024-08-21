@@ -45,12 +45,24 @@
 \contentsline {subsection}{\numberline {4.2.1}Common Reference}{14}{subsection.4.2.1}%
 \contentsline {section}{\numberline {4.3}Implementation Details}{15}{section.4.3}%
 \contentsline {subsection}{\numberline {4.3.1}Provers}{15}{subsection.4.3.1}%
+\contentsline {section}{\numberline {4.4}Main Challenges}{15}{section.4.4}%
 \contentsline {chapter}{\numberline {5}Results}{17}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Discussion}{19}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Analysis of Results}{19}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Implications}{19}{section.6.2}%
-\contentsline {chapter}{\numberline {7}Conclusion and Future Work}{20}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Conclusion}{20}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Future Work}{20}{section.7.2}%
-\contentsline {chapter}{References}{21}{section.7.2}%
+\contentsline {section}{\numberline {5.1}Implications}{17}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Limitations}{19}{subsection.5.1.1}%
+\contentsline {chapter}{\numberline {6}Conclusion and Future Work}{20}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Conclusion}{20}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Future Work}{20}{section.6.2}%
+\contentsline {chapter}{References}{21}{section.6.2}%
 \contentsline {chapter}{\numberline {A}Appendix A}{23}{appendix.A}%
+\contentsline {section}{\numberline {A.1}ElGamal Encryption}{23}{section.A.1}%
+\contentsline {subsection}{\numberline {A.1.1}A.1 Overview of ElGamal Encryption}{23}{subsection.A.1.1}%
+\contentsline {subsection}{\numberline {A.1.2}A.2 Key Generation}{23}{subsection.A.1.2}%
+\contentsline {subsection}{\numberline {A.1.3}A.3 Encryption Process}{23}{subsection.A.1.3}%
+\contentsline {subsection}{\numberline {A.1.4}A.4 Decryption Process}{24}{subsection.A.1.4}%
+\contentsline {subsection}{\numberline {A.1.5}A.5 Homomorphic Properties}{24}{subsection.A.1.5}%
+\contentsline {section}{\numberline {A.2}Pedersen Commitments}{24}{section.A.2}%
+\contentsline {subsection}{\numberline {A.2.1}A.1 Overview of Pedersen Commitments}{24}{subsection.A.2.1}%
+\contentsline {subsection}{\numberline {A.2.2}A.2 Commitment Scheme}{24}{subsection.A.2.2}%
+\contentsline {subsection}{\numberline {A.2.3}A.3 Opening the Commitment}{25}{subsection.A.2.3}%
+\contentsline {subsection}{\numberline {A.2.4}A.4 Homomorphic Properties}{25}{subsection.A.2.4}%
+\contentsline {subsection}{\numberline {A.2.5}A.5 Security Properties}{25}{subsection.A.2.5}%

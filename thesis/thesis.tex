@@ -9,6 +9,7 @@
 \usepackage{listings-rust}
 \usepackage{color}
 \usepackage{url}
+\usepackage{diagbox}
 
 \geometry{margin=1in}
 \setstretch{1.5}
@@ -381,8 +382,8 @@ All of the codebase is open on github\cite{repo}, accompanied with a comprehensi
 \begin{table}
 \begin{lstlisting}[language=Rust]
 let m = //factor of card count(effective column count)
-let mu = //Efficiency hyperparameter(Square root of N for optimal)
-let m_ = m / mu;
+let mu = //Efficiency hyperparameter
+let m_ = m / mu;//(Square root of N for optimal)
 //Base Ciphertexts for diagonal products
 //b_ and tau_ are random value scalar vectors
 let mut randomCT: Vec<Ciphertext> = b_.iter()
@@ -406,10 +407,20 @@ for i in 1..=mu {
 \caption{Diagonalization over $n\,X\,m$ matrix}
 \label{table:diagon}
 \end{table}
+
+\section{Main Challenges}
+The proof constructions become straight forward whence the common references are set. 
+Since they are non-interactive as well the verifier part can be simulated by random challenges.
+However due to multiple proof compositions, an $y$ challenge we have recieved in the parent proof,
+should also be the same challenge in the child proof. We have decided that the challenges should be passed down in the proving step since composite proofs are still sequential.
 \chapter{Results}
 We have measured the time it takes for any of the arguments' proof and verification, while also recording the resulting proofs' memory size. 
 Even at first with low card count of $8 x 8\,=\,64$ in \ref{table:allresults} we can see how the optimized version of multi-exponentiation is much more efficient in both size and time performance.\\
-Since the main improvement is the difference between this optimized and base versions we will focus on more test results with different parameters in \ref{table:mexp}.
+Since the main improvement is the difference between this optimized and base versions we will focus on more test results with different parameters in \ref{table:mexp}.\\
+As we can see from the table the proof size is dependent on the column size($m$) of a matrix of cards, rather than $N$ the total card count.
+This is due to the efficiency of the shuffle argument, performing expensive operations over column vectors instead over single values.\\
+While the speed of the base argument still is affected by the total card count, we can see that is not true for the optimized argument. The optimized argument is not even dependent on the column size but only on the efficency parameter $mu$.
+We can see the performance metrics follow the proposed speed up and proof size in Bayer-Groth. A $\mathcal{O}(\sqrt{N})$\cite{bgshuffle} space improvement when $mu\,=\,1$.
 \begin{table}
 	\begin{center}
 	\begin{tabular}{||c|c||}
@@ -421,7 +432,8 @@ Since the main improvement is the difference between this optimized and base ver
 		n&8\\
 		mu&1\\
 		\hline \hline
-
+		Proof Type&Time(ms) or Size(bytes)\\
+		\hline
 		Shuffle Proof Size&10304\\
 		Shuffle Proof Time&702\\
 		Shuffle Verify Time&93\\
@@ -449,7 +461,7 @@ Since the main improvement is the difference between this optimized and base ver
 		Zero Proof Size&3680\\
 		Zero Proof Time&205\\
 		Zero Verify Time&47\\
-		\hline \hline
+		\hline 
 	\end{tabular}
 	\end{center}
 	\caption{Performance Metrics, Time in ms, Size as bytes}
@@ -457,23 +469,51 @@ Since the main improvement is the difference between this optimized and base ver
 \end{table}
 
 \begin{table}
-	\caption{Multi-Exponentiation Trials}
+	\begin{center}
+	\begin{tabular}{||c|c|c||}\hline
+		\backslashbox{Parameters}{Proof Type} & Base Mexp& Optimized Mexp\\
+		\hline
+		N=64; m=8; $mu$=1 & 8224/639 & 1184/119\\
+		\hline
+		N=64; m=8; $mu$=4 & 8224/631 & 4064/322 \\
+		\hline
+		N=128; m=8; $mu$=1 & 8480/1220 & 1184/211\\
+		\hline
+		N=128; m=16; $mu$=1 & 15904/2298 & 1184/221\\
+		\hline
+		N=128; m=16; $mu$=4 & 15904/2198 & 4064/600\\
+		\hline
+		N=1024; m=16; $mu$=1 & 17696/17544 & 1184/1779\\
+		\hline
+	\end{tabular}
+	\end{center}
+	\caption{Multi-Exponentiation Trials, Space(bytes)/Time(ms) metrics}
 	\label{table:mexp}
 \end{table}
 
-\chapter{Discussion}
-\section{Analysis of Results}
-analysis of the results here.
-
 \section{Implications}
-discussion on implications here.
-
+We have achieved a safe and verifiable Rust library that constructs shuffle proofs.
+Since we have used a common scheme for security, Ristretto Points, our arguments and proof construction algorithms could be implemented seamlessly to any Rust proof scheme.
+Theoretically inspired by Bayer-Groth and practically useful with Rust we provide this easy to use shuffle argument library.\\
+Providing modular implementations of every sub proof, that can be used to create more complex or simpler proofs than shuffling.
+We are hoping this would provide the cryptography community in Rust with some inspiration.
+\subsection{Limitations}
+While the Bayer-Groth algorithm suggests it works with any homomorphic property,
+in our case we have only covered ElGamal encryption and Pedersen commitments over elliptic curves.\\
+Some of the arguments don't have mutual dependencies so the overall Shuffle Argument performance
+could be better if concurrency were added. However for a proof of concept we have not decided to implement it.
 \chapter{Conclusion and Future Work}
 \section{Conclusion}
-conclusion here.
+In conclusion we believe we have provided a library that replicates the results of Bayer-Groth Shuffle Arguments in a pure Rust environment. 
+While Rust's community is growing everyday there is an increasing demand in practical implementations of all kind, which we believe we have contributed to the cryptography discourse with this library.
 
 \section{Future Work}
-suggestions for future work here.
+The library will be improved going forward with certain improvements already underway such as:
+\begin{itemize}
+	\item Generalized prove-verify schemes with Rust Traits
+	\item Concurrency between Product Argument and Mexp Argument for a faster Shuffle Argument
+	\item Generalized homomorphism, so any explicitly defined property is supported
+\end{itemize}
 
 % References
 \newpage
@@ -484,7 +524,77 @@ suggestions for future work here.
 % Appendix
 \appendix
 \chapter{Appendix A}
-Your appendix content here.
+\section{ElGamal Encryption}
 
+\subsection{A.1 Overview of ElGamal Encryption}
+ElGamal encryption is a public-key cryptosystem based on the Diffie-Hellman key exchange. It ensures confidentiality and security under the assumption that the discrete logarithm problem is hard.
+
+\subsection{A.2 Key Generation}
+\begin{itemize}
+    \item \textbf{Select Parameters:} A large prime \( p \) and a generator \( g \) of the multiplicative group \( \mathbb{Z}_p^* \).
+    \item \textbf{Private Key:} A random integer \( x \) such that \( 1 \leq x < p-1 \).
+    \item \textbf{Public Key:} Calculate \( y = g^x \mod p \).
+\end{itemize}
+The public key is \( (p, g, y) \), and the private key is \( x \).
+
+\subsection{A.3 Encryption Process}
+To encrypt a message \( m \) (where \( m < p \)):
+\begin{enumerate}
+    \item Choose a random ephemeral key \( k \) such that \( 1 \leq k < p-1 \).
+    \item Compute \( c_1 = g^k \mod p \).
+    \item Compute \( c_2 = m \cdot y^k \mod p \).
+\end{enumerate}
+The ciphertext is \( (c_1, c_2) \).
+
+\subsection{A.4 Decryption Process}
+To decrypt the ciphertext \( (c_1, c_2) \) using the private key \( x \):
+\begin{enumerate}
+    \item Compute \( s = c_1^x \mod p \).
+    \item Compute \( m = c_2 \cdot s^{-1} \mod p \), where \( s^{-1} \) is the multiplicative inverse of \( s \) modulo \( p \).
+\end{enumerate}
+The result \( m \) is the original plaintext message.
+
+\subsection{A.5 Homomorphic Properties}
+ElGamal encryption has a multiplicative homomorphism property. Given two ciphertexts \( (c_{11}, c_{12}) \) for message \( m_1 \) and \( (c_{21}, c_{22}) \) for message \( m_2 \), the product of these ciphertexts is a valid encryption of the product \( m_1 \cdot m_2 \):
+\[
+(c_{11} \cdot c_{21} \mod p, \ c_{12} \cdot c_{22} \mod p) = \left( g^{k_1 + k_2} \mod p, \ (m_1 \cdot m_2) \cdot y^{k_1 + k_2} \mod p \right)
+\]
+
+\section{Pedersen Commitments}
+
+\subsection{A.1 Overview of Pedersen Commitments}
+Pedersen commitments are a cryptographic primitive that provides a way to commit to a value while keeping it hidden and allowing the commitment to be opened later. They are homomorphic, additively hiding, and computationally binding, making them useful in various cryptographic protocols.
+
+\subsection{A.2 Commitment Scheme}
+Given a cyclic group \( G \) of prime order \( q \) with a generator \( g \) and another element \( h \) where the discrete logarithm of \( h \) with respect to \( g \) is unknown:
+\begin{itemize}
+    \item \textbf{Commitment:} To commit to a value \( m \), choose a random \( r \in \mathbb{Z}_q \) and compute the commitment as:
+    \[
+    C = g^m \cdot h^r \mod q
+    \]
+    Here, \( C \) is the commitment, \( m \) is the message, and \( r \) is the random blinding factor.
+\end{itemize}
+
+\subsection{A.3 Opening the Commitment}
+To open the commitment \( C \), reveal both the value \( m \) and the blinding factor \( r \). The verifier can check the validity of the commitment by recomputing \( C \) as:
+\[
+C' = g^m \cdot h^r \mod q
+\]
+If \( C' = C \), the commitment is valid.
+
+\subsection{A.4 Homomorphic Properties}
+Pedersen commitments are homomorphic, meaning the product of two commitments is a commitment to the sum of the corresponding values. For two commitments \( C_1 = g^{m_1} \cdot h^{r_1} \) and \( C_2 = g^{m_2} \cdot h^{r_2} \), the combined commitment is:
+\[
+C_1 \cdot C_2 = g^{m_1 + m_2} \cdot h^{r_1 + r_2} \mod q
+\]
+This property allows for operations on committed values without revealing them.
+
+\subsection{A.5 Security Properties}
+Pedersen commitments are:
+\begin{itemize}
+    \item \textbf{Hiding:} The commitment does not reveal the value \( m \) due to the random blinding factor \( r \).
+    \item \textbf{Binding:} It is computationally infeasible to find different pairs \( (m, r) \) and \( (m', r') \) such that \( g^m \cdot h^r = g^{m'} \cdot h^{r'} \).
+\end{itemize}
+These properties make Pedersen commitments highly secure for use in zero-knowledge proofs and other cryptographic protocols.
 \end{document}
 
