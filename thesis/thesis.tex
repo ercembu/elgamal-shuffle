@@ -45,10 +45,20 @@
 \pagenumbering{roman}
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
-A shuffle operation in cryptography is an operation that takes committed and anonymous series of values and returns the original serie modified with a permuted order. Which is important in many real world scenarios(e-voting, mental card games).
-Due to the plaintexts or data being encrypted, the correctness of a shuffle of commitments is not straight forward to verify. To overcome this problem an honest zero-knowledge verifier has been proposed to verify the correctness of a shuffle of homomorphic encryptions by Bayer and Groth(2012).
-This argument for correctness combines two separate arguments(Multi-exponentiation Argument, Product Argument) to produce a Shuffle Argument for correctness. The implementation of these arguments are lacking in today’s literature of tools. With the use of Rust, which has enormous support from the cryptography community, and with it’s efficiency in runtime, we aim to provide an extensive and easy to use zero-knowledge proof
-system.
+A shuffle operation in cryptography is an operation that takes committed and anonymous series of values and returns the original serie modified with a permuted order. 
+It is an important operation in many real world scenarios(e-voting, mental card games).
+Due to the plaintexts or data being encrypted for privacy, the correctness of a shuffle of commitments is not straight 
+forward to verify. While there are algorithms to construct such arguments, we are providing the first comprehensive 
+pure Rust library for the Correctness of a Shuffle Operation.\par
+The library works over elliptic curve prime order groups 
+to commit and encrypt data to hide the values, while exploiting the homomorphism of the elliptic curves for efficiency.
+This argument for correctness combines two separate arguments(Multi-exponentiation Argument, Product Argument) to produce a Shuffle Argument for correctness. 
+With the use of Rust, which has enormous support from the cryptography community, with it’s efficiency in runtime, 
+we aim to provide an extensive and easy to use zero-knowledge proof
+framework that can be seamlessly incorporated and used by other proof schemes, or used to construct complex arguments.\par
+We give performance results of the tests we ran as well to show the implementation follows the proposed optimized performance.\\
+
+\textbf{Keywords:} The Rust Programming Language, mix-net, zero-knowledge, shuffle, mental card games
 
 \newpage
 
@@ -62,10 +72,6 @@ acknowledgements here.
 % Table of Contents
 \tableofcontents
 
-% List of Figures
-\newpage
-\listoffigures
-
 % List of Tables
 \newpage
 \listoftables
@@ -75,44 +81,52 @@ acknowledgements here.
 \pagenumbering{arabic}
 
 \chapter{Introduction}
-\section{Background}
-\subsection{Zero-Knowledge Proofs}
+With the introduction of the Rust programming language to cryptography, there has been a sizable influx of cryptography research migrating to rust. 
+The community has been at work creating tools and frameworks to exploit Rust's native advantages in performance and memory control. \par
+We aim to contribute to this collection of tools and frameworks by implementing a secure and efficient version of a Shuffle Argument.
+The Shuffle argument provided by Bayer and Groth \cite{bgshuffle} prove that a deck of "values" has been shuffled, with an honest zero-knowledge verifier that makes use of two independent arguments.\par
+The sublinear communication complexity the argument provides is an improvement which is essential to smaller communications in proofs, and the main reason we want to combine this efficiency with the efficiency of the Rust Programming Language.\par
+We will describe a library of arguments which ultimately combine into a complete and secure Bayer-Groth Shuffle Argument, 
+and also be used in tandem with other cryptographic proofs and schemes provided by Rust's cryptograhic community.
+\section{Zero-Knowledge Proofs}
 Zero-knowledge proofs (ZKPs) are a fundamental concept in cryptography, enabling one party 
 (the prover) to demonstrate knowledge of a particular piece of information to another party 
-(the verifier) without revealing the information itself.\\
-
-
+(the verifier) without revealing the information itself.\par
 This concept, first introduced by Goldwasser, Micali, and Rackoff\cite{zk}, has since become 
 an important part of privacy-preserving cryptographic protocols. 
 ZKPs are widely used in applications where privacy and security are paramount, 
 such as digital signatures, identity verification, and secure voting systems.
 
-\subsection{Bayer-Groth Shuffle Argument}
+\section{Bayer-Groth Shuffle Argument}
 The Bayer-Groth shuffle argument\cite{bgshuffle}, is a specific type of zero-knowledge proof that
 allows for the verification of correctness for a shuffle without revealing 
-the underlying permutation or the original values. \\
+the underlying permutation or the original values. \par
 This protocol is particularly useful in scenarios where data must be anonymized or shuffled 
-securely, such as in electronic voting systems, secure auctions, and mental card games. \\
+securely, such as in electronic voting systems, secure auctions, and mental card games. \par
 
 It enables a prover to demonstrate that a set of ciphertexts (encrypted values) is a valid 
 permutation of another set of ciphertexts, with minimal computational and communication overhead.
 The protocol achieves this by leveraging homomorphic encryption and prime order groups, ensuring that the shuffle's correctness can be verified without revealing any sensitive information.
 
-\subsection{The Rust Programming Language}
+\section{Special honest verifier zero-knowledge argument of knowledge}
+
+\section{The Fiat-Shamir heuristic}
+
+\section{The Schwartz-Zippel lemma}
+
+\section{The Rust Programming Language}
 Rust\cite{rust} is a near low-level programming language known for its emphasis on safety, concurrency and performance.
 Designed to ensure properties that might be overlooked otherwise such as memory safety and
 reference efficiency, Rust has quickly gained popularity in software development. 
-Particularly for applications where performance and security are critical.
-
-\subsubsection{Safety and Performance}
+Particularly for applications where performance and security are critical.\par
 Rust's ownership model, which enforces strict rules on how memory is managed, ensures that programs
 are both safe and efficient\cite{rust}. This is particularly important in cryptographic applications,
-where errors in memory management can lead to vulnerabilities and exploits.\\
+where errors in memory management can lead to vulnerabilities and exploits.\par
 Rust's zero-cost abstractions and fine-grained control over system resources make it an ideal
 choice for implementing complex cryptographic protocols, such as the Bayer-Groth shuffle argument.
-\subsection{Previous Implementations and the Need for Rust}
+\section{Previous Implementations and the Need for Rust}
 While the Bayer-Groth shuffle argument has been implemented in various programming languages, 
-there has been a growing interest in leveraging Rust’s unique features for cryptographic applications. \\
+there has been a growing interest in leveraging Rust’s unique features for cryptographic applications. \par
 Existing implementations in languages like C++ or Python often face challenges related to memory safety, performance, or ease of concurrency. 
 Rust’s strict safety guarantees, combined with its ability to produce highly optimized binaries, make it an attractive choice for implementing cryptographic protocols.
 
@@ -148,9 +162,8 @@ followed by talking about what could be future additions to the library we have 
 
 
 
-\chapter{Former Literature}
-\section{Source Material}
-\subsection{Efficient ZK Argument for Correctness of a Shuffle}
+\chapter{Related Work}
+\section{Efficient ZK Argument for Correctness of a Shuffle}
 In 2012, Bayer and Groth\cite{bgshuffle} presented an algorithm with sublinear 
 communication complexity for shuffling a deck of homomorphically encrypted values.
 
@@ -174,15 +187,14 @@ Specifically the algorithm consists of 6 proof schemes, some used as components 
 	\item \textbf{Single Value Product Argument:} a 3-move argument of knowledge of commited single values having a particular product.
 \end{itemize}
 
-\section{Related Work}
-\subsection{Decaf: Eliminating cofactors through point compression}
+\section{Decaf: Eliminating cofactors through point compression}
 Decaf\cite{decaf} proposes a point compression format for elliptic curves over 
 large-characteristic fields. Which is an effective implementation of cofactor-4 elliptic curve points
 used by many state of the art cryptographic libraries.\\
 Prime order groups created by these elliptic curves show additive homomorphism. Which is a significant
 improvement on performance when it comes to implementation of complex proofs.
 
-\section{Existing Solutions}
+\section{Existing Implementations}
 \subsection{Mental Poker}
 Mental Poker\cite{mentalpoker} is a library aimed to implement a verifiable
 mental poker game for research purposes. While it is also purely in Rust,
@@ -205,7 +217,7 @@ or small code used as injection for other projects. Which we decided not to
 mention for brevity's sake.
 
 \chapter{Methodology}
-\section{Important Related Concepts}
+\section{Related Concepts}
 
 \subsection{ElGamal Encryption}
 ElGamal encryption is a public-key cryptosystem based on the Diffie-Hellman key exchange\cite{elgamal}. The security of the encryption relies on the difficulty of solving the discrete logarithm problem in large cyclic groups. Without having the private key $x$, it is computationally infeasible to derive the plaintext from the ciphertext.
@@ -283,8 +295,7 @@ with $k_1$ and $k_2$ being the respective ephemeral keys.\\
 Most of the proof construction algorithms' verification and security is assured 
 by using these properties for our arguments.
 
-\section{Research Design}
-\subsection{Ristretto Points}
+\section{Ristretto Points}
 A Ristretto Point is a cryptographic construction designed to create a
 prime-order group from elliptic curves using Decaf on Edwards Curves, 
 enhancing the security and efficiency of cryptographic operations. 
@@ -292,19 +303,19 @@ In the context of mental card games, Ristretto Points
 enable players to prove knowledge or 
 possession of certain cards without revealing the cards themselves.
 
-\subsubsection{Prime-Order Group Properties}
+\subsection{Prime-Order Group Properties}
 Ristretto Points provide a prime-order group that simplifies 
 mathematical operations and ensures predictable, 
 secure behavior in cryptographic protocols.
 A prime-order group over elliptic curves eliminates issues related to cofactor multiplication, which can complicate the implementation of secure protocols.
 In mental card games, this property ensures that each card, represented as a Ristretto Point, interacts securely and predictably within the proof system.
 
-\subsubsection{Unique Encoding and Decoding}
+\subsection{Unique Encoding and Decoding}
 One of the key features of Ristretto Points is their ability to encode and decode points on an elliptic curve in a way that eliminates ambiguities.
 Each encoded point uniquely corresponds to a single group element, which is critical for maintaining the integrity of the cryptographic proofs.
 This property ensures that each card in the mental card game, when encoded as a Ristretto Point, has a unique representation, preventing issues such as duplication or misidentification.
 
-\subsubsection{Implementation of Choice}
+\subsection{Implementation of Choice}
 We have chosen Dalek Cryptography's crypto tools framework curve25519-dalek\cite{dalek:curve}
 as library of choice due to multiple reasons.
 As the library supports the homomorphic properties of such group points, it also reduces the dimension of operations via discarding unnecessary operations such as scalar and point multiplication(which would be cofactor multiplication).\\
@@ -361,7 +372,6 @@ member functions also shouldered the responsibility for:
 Since Bayer-Groth defined their commitment scheme a bit differently, for completeness we also redefined 
 the encryption scheme in the Common Reference.
 
-\section{Implementation Details}
 \subsection{Provers}
 While being straight forward mathmetical implementations of the Bayer-Groth algorithms, Rust provides us with
 security by keeping the initial arguments explicitly immutable and fast batch operations due to it's efficient
@@ -498,13 +508,12 @@ Since we have used a common scheme for security, Ristretto Points, our arguments
 Theoretically inspired by Bayer-Groth and practically useful with Rust we provide this easy to use shuffle argument library.\\
 Providing modular implementations of every sub proof, that can be used to create more complex or simpler proofs than shuffling.
 We are hoping this would provide the cryptography community in Rust with some inspiration.
-\subsection{Limitations}
+\section{Limitations}
 While the Bayer-Groth algorithm suggests it works with any homomorphic property,
 in our case we have only covered ElGamal encryption and Pedersen commitments over elliptic curves.\\
 Some of the arguments don't have mutual dependencies so the overall Shuffle Argument performance
 could be better if concurrency were added. However for a proof of concept we have not decided to implement it.
-\chapter{Conclusion and Future Work}
-\section{Conclusion}
+\chapter{Conclusion}
 In conclusion we believe we have provided a library that replicates the results of Bayer-Groth Shuffle Arguments in a pure Rust environment. 
 While Rust's community is growing everyday there is an increasing demand in practical implementations of all kind, which we believe we have contributed to the cryptography discourse with this library.
 
