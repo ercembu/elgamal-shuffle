@@ -431,47 +431,49 @@ Our Pedersen commitments have their commitment key $ck$ as $n+1$ random generato
 This allows us to commit to maximum $n$ sized vectors, we can also commit to less then $n$ elements by setting the rest of the entries to zero.
 \begin{itemize}
 	\item For matrix $A \in \mathbb{Z}^{n \times m}_q$ with column vectors $\vec{a}_1,\ldots\vec{a}_m\\ com_{ck}(A; \vec{r}) = (com_{ck}(\vec{a}_1;r_1),\ldots,com_{ck}(\vec{a}_m; r_m))$
-	\item For vector $\vec{a} \in \mathbb{Z}_q^N$ and $\vec{r} \in \mathbb{Z}_q^m$ where $N = mn\\ com_{ck}(\vec{a};\vec{r})$ shows a matrix-like vector operation over column vectors.
+	\item For vector $\vec{a} \in \mathbb{Z}_q^N$ and $\vec{r} \in \mathbb{Z}_q^m$ where $N = mn\\ com_{ck}(\vec{a};\vec{r})$ operation allows vectors of values to be treated as matrices if the parameter sizes dont match,an operation over column vectors.
 \end{itemize}
 \section{System Design}
+\subsection*{Arguments}
 We have decided to abstract each argument to:
 \begin{itemize}
 	\item a struct containing the initial public statements and witnesses,
 	\item member prove function for the construction of the proof arguments,
-	\item member verify function that verifies the initial statement with the constructed proof.
+	\item member verify function that verifies the initial statement with the given proof.
 \end{itemize}
-As such we have 6 "Provers" for each argument defined in Bayer-Groth, for the arguments injected into others
-the parent argument's constructed proof also contains the child argument's proof. This injection is paralleled
-in the verification step of the arguments, where the child prover is needed for the child verification
-so the overall verification becomes complete and secure.
-
+As such we have 6 "Provers" for each argument defined in Bayer-Groth, for the arguments injected into others the parent argument's constructed proof also contains the child argument's proof. 
+This injection is paralleled in the verification step of the arguments, where the child prover is needed for the child verification so the overall verification becomes complete and secure.
+\subsubsection{The Random Oracle}
+For our non-interactive random oracle we chose a cryptographically safe RNG based on the ChaCha stream cipher \cite{cha}. 
+Which is an improved variant of Salsa20 \cite{salsa} cipher family. 
+The Pseudo-RNG based on this cipher uses the underlying cipher generators to expand a key into a stream of pseudo random bytes.\par
+Which satisfies our definition of a random oracle for the Fiat-Shamir heuristic. During the construction of the proofs, the challenges $x, y, z$ are requested as random scalars from this random oracle.
+\subsection*{Public Transcript}
+The public transcript consists of the committed or encrypted values that are shared publicly by the prover. 
+It is used to make sure the prover is honest and also by the verifier to finally decide on the argument.\par
+We abstracted the transcript to the Proof structs we have defined returning from the proof functions of our provers. This allows for not yet proven Provers to still be able to verify proofs constructed by other provers of the same kind.
 \subsection*{Common Reference}
-To keep consistency within each of our arguments for our commitments and encryptions we decided to abstract 
-the Pedersen commitment generators and ElGamal encryption keys in a seperate struct. This components associated
+First we take a look at the common reference string key needed for commitments and encryptions. 
+The construction of this key is in polynomial time respect to card count since we need $n+1$ random generator points from our group order $q$ for Pedersen commitments. 
+The ElGamal public key is much less of a problem since it's public key setup can be done in constant time.
+To keep consistency with our group order for our commitments and encryptions we made sure to use the same Ristretto curve.\par
+We also decided to abstract the common reference keys in a seperate struct. 
+This component's associated
 member functions also shouldered the responsibility for: 
 \begin{itemize}
-	\item returning random scalars from a shared rng, 
+	\item returning random scalars from a crpytographically safe rng, 
 	\item commiting scalars, vectors and matrices of scalars, 
 	\item encryption of scalar or point values.
 \end{itemize}
-Since Bayer-Groth defined their commitment scheme a bit differently, for completeness we also redefined 
-the encryption scheme in the Common Reference.
-
 \subsection*{Provers}
-While being straight forward mathmetical implementations of the Bayer-Groth algorithms, Rust provides us with
-security by keeping the initial arguments explicitly immutable and fast batch operations due to it's efficient
-iterator and collection access implementations.
-This property is especially exploited when it comes to matrix operations.\\
-One example we will show of the provers is the multi-exponentiation argument since it has two different prove-verify
-implementations. The "optimized" version is called as such due to it being the main contributor to the efficiency in message size,
-while also being the main computation spender.
-
-As shown in table \ref{table:diagon} the diagonalization over a factor of the total number of elements,
-can look pretty straight forward once the index arithmatics are manipulated for efficiency.
-
+While being straight forward mathmetical implementations of the Bayer-Groth algorithms, 
+Rust provides us with security by keeping the initial arguments explicitly immutable, 
+and fast batch operations due to it's efficient iterator and collection access implementations.
+This property is especially exploited when it comes to matrix operations.\par
+As shown in table \ref{table:diagon} the diagonalization over a factor of the total number of elements
+can look pretty straight forward once the index arithmetics are manipulated for efficiency.
 Since the matrix exponentiation here is purely defined via iterators in $pow()$, 
-the iterative recalling of this function is devoid of indexed memory access overhead.\\
-
+the iterative recalling of this function is devoid of indexed memory access overhead.\par
 This type of improvements provided by native Rust is repeated in many places across the library.
 All of the codebase is open on github\cite{repo}, accompanied with a comprehensive rust documentation.
 
@@ -503,19 +505,19 @@ for i in 1..=mu {
 \caption{Diagonalization over $n\,X\,m$ matrix}
 \label{table:diagon}
 \end{table}
-\subsection*{Public Transcript}
 
 \section{Main Challenges}
 The proof constructions become straight forward whence the common references are set. 
 Since they are non-interactive as well the verifier part can be simulated by random challenges.
 However due to multiple proof compositions, an $y$ challenge we have recieved in the parent proof,
-should also be the same challenge in the child proof. We have decided that the challenges should be passed down in the proving step since composite proofs are still sequential.
+should also be the same challenge in the child proof. We have decided that the challenges should be passed down in the proving step since composite proofs are still sequential.\par
+Other than small design decisions as such, most of the effort went into designing the system according to zero-knowledge schemes and making sure of the soundness of the algorithms.
 \chapter{Results}
 We have measured the time it takes for any of the arguments' proof and verification, while also recording the resulting proofs' memory size. 
-Even at first with low card count of $8 x 8\,=\,64$ in \ref{table:allresults} we can see how the optimized version of multi-exponentiation is much more efficient in both size and time performance.\\
-Since the main improvement is the difference between this optimized and base versions we will focus on more test results with different parameters in \ref{table:mexp}.\\
+Even at first with low card count of $8 x 8\,=\,64$ in \ref{table:allresults} we can see how the optimized version of multi-exponentiation is much more efficient in both size and time performance.\par
+Since the main improvement is the difference between this optimized and base versions we will focus on more test results with different parameters in \ref{table:mexp}.\par
 As we can see from the table the proof size is dependent on the column size($m$) of a matrix of cards, rather than $N$ the total card count.
-This is due to the efficiency of the shuffle argument, performing expensive operations over column vectors instead over single values.\\
+This is due to the efficiency of the shuffle argument, performing expensive operations over column vectors instead over single values.\par
 While the speed of the base argument still is affected by the total card count, we can see that is not true for the optimized argument. The optimized argument is not even dependent on the column size but only on the efficency parameter $mu$.
 We can see the performance metrics follow the proposed speed up and proof size in Bayer-Groth. A $\mathcal{O}(\sqrt{N})$\cite{bgshuffle} space improvement when $mu\,=\,1$.
 \begin{table}
@@ -591,13 +593,13 @@ We can see the performance metrics follow the proposed speed up and proof size i
 \section{Implications}
 We have achieved a safe and verifiable Rust library that constructs shuffle proofs.
 Since we have used a common scheme for security, Ristretto Points, our arguments and proof construction algorithms could be implemented seamlessly to any Rust proof scheme.
-Theoretically inspired by Bayer-Groth and practically useful with Rust we provide this easy to use shuffle argument library.\\
+Theoretically inspired by Bayer-Groth and practically useful with Rust we provide this easy to use shuffle argument library.\par
 Providing modular implementations of every sub proof, that can be used to create more complex or simpler proofs than shuffling.
 We are hoping this would provide the cryptography community in Rust with some inspiration.
 \section{Limitations}
 Assumes ciphertexts are valid.
 While the Bayer-Groth algorithm suggests it works with any homomorphic property,
-in our case we have only covered ElGamal encryption and Pedersen commitments over elliptic curves.\\
+in our case we have only covered ElGamal encryption and Pedersen commitments over elliptic curves.\par
 Some of the arguments don't have mutual dependencies so the overall Shuffle Argument performance
 could be better if concurrency were added. However for a proof of concept we have not decided to implement it.
 \chapter{Conclusion}

@@ -24,7 +24,8 @@
 \contentsline {subsubsection}{Vectors}{18}{section*.30}%
 \contentsline {subsubsection}{Ciphertexts}{18}{section*.31}%
 \contentsline {subsubsection}{Commitments}{18}{section*.32}%
-\contentsline {section}{\numberline {5.2}System Design}{18}{section.5.2}%
+\contentsline {section}{\numberline {5.2}System Design}{19}{section.5.2}%
+\contentsline {subsubsection}{The Random Oracle}{19}{section*.35}%
 \contentsline {section}{\numberline {5.3}Main Challenges}{20}{section.5.3}%
 \contentsline {chapter}{\numberline {6}Results}{22}{chapter.6}%
 \contentsline {section}{\numberline {6.1}Implications}{22}{section.6.1}%
