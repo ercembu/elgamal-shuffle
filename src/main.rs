@@ -4,8 +4,9 @@
 #![allow(warnings)]
 #![feature(iter_next_chunk)]
 use rust_elgamal::{Scalar, Ciphertext};
-use rand::rngs::StdRng;
+use rand_chacha::ChaCha20Rng;
 use rand::SeedableRng;
+
 
 use merlin::Transcript;
 
@@ -32,7 +33,7 @@ fn main() {
 
     //Setup rng and common reference key(public key for ElGamal,
     // commitment key for Pedersen)
-    let mut rng = StdRng::from_entropy();
+    let mut rng = ChaCha20Rng::from_entropy();
     let mut cr = arguers::CommonRef::new(N as u64, rng);
 
     //Create Open Deck from scalars

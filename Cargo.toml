@@ -23,6 +23,7 @@ std = ["curve25519-dalek/std", "rand_core/std"]
 
 [dependencies]
 # simd_backend extends u64_backend
+rand_chacha = {version="*"}
 katex-doc = {version="*"}
 curve25519-dalek = { package = "curve25519-dalek-ng", version = "4", default-features = false, features = ["alloc", "u64_backend"] }
 rust-elgamal = {version="0.4.0", default-features = true}

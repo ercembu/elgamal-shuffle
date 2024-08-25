@@ -297,10 +297,10 @@ impl ZeroProver {
 
 #[test]
 fn test_c_A() {
-    use rand::rngs::StdRng;
+    use rand_chacha::ChaCha20Rng;
     use rand::SeedableRng;
-    
-    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
+
+    let mut rng = ChaCha20Rng::from_entropy();
     let m: usize = 13;
     let n: usize = 4;
     let mut com_ref = CommonRef::new(n as u64, rng);
@@ -349,12 +349,13 @@ fn test_c_A() {
 #[test]
 fn test_base() {
     use crate::provers::hadamard_prover::HadamProver;
-    use rand::rngs::StdRng;
+    use rand_chacha::ChaCha20Rng;
     use rand::SeedableRng;
+
+    let mut rng = ChaCha20Rng::from_entropy();
 
     let mut prover_transcript = Transcript::new(b"testZeroProof");
 
-    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 4;
     let n: usize = 13;
     let mut com_ref = CommonRef::new((n*m) as u64, rng);

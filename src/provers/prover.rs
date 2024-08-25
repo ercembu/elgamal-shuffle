@@ -274,11 +274,11 @@ impl ShuffleProver {
 }
 #[test]
 fn test_product_prover() {
-    use rand::rngs::StdRng;
+    use rand_chacha::ChaCha20Rng;
     use rand::SeedableRng;
     use crate::utils::enums::EGInp;
     
-    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
+    let mut rng = ChaCha20Rng::from_entropy();
     let m: usize = 6;
     let n: usize = 4;
 
@@ -397,12 +397,12 @@ fn test_product_prover() {
 
 #[test]
 fn test_prover_obs() {
-    use rand::rngs::StdRng;
-    use rand::SeedableRng;
+    use rand_chacha::ChaCha20Rng;
+    use rand_core::SeedableRng;
     use crate::utils::enums::EGInp;
     use std::time::SystemTime;
     
-    let mut rng = StdRng::from_entropy();//seed_from_u64(2);
+    let mut rng = ChaCha20Rng::from_entropy();//seed_from_u64(2);
     let m: usize = 16;
     let n: usize = 8;
     

@@ -209,11 +209,11 @@ impl SVProver {
 }
 #[test]
 fn test_sv_hiding_a() {
-    use rand::rngs::StdRng;
+    use rand_chacha::ChaCha20Rng;
     use rand::SeedableRng;
 
 
-    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
+    let mut rng = ChaCha20Rng::from_entropy();
     let m: usize = 4;
     let n: usize = 4;
     let mut com_ref = CommonRef::new((n*m) as u64, rng);
@@ -242,12 +242,13 @@ fn test_sv_hiding_a() {
 
 #[test]
 fn test_sv_base() {
-    use rand::rngs::StdRng;
+    use rand_chacha::ChaCha20Rng;
     use rand::SeedableRng;
+
+    let mut rng = ChaCha20Rng::from_entropy();
 
     let mut prover_transcript = Transcript::new(b"testSVProof");
 
-    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
     let m: usize = 4;
     let n: usize = 4;
     let mut com_ref = CommonRef::new((n*m) as u64, rng);

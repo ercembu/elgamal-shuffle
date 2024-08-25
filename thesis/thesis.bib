@@ -1,3 +1,232 @@
+@InProceedings{fiat,
+author="Fiat, Amos
+and Shamir, Adi",
+editor="Odlyzko, Andrew M.",
+title="How To Prove Yourself: Practical Solutions to Identification and Signature Problems",
+booktitle="Advances in Cryptology --- CRYPTO' 86",
+year="1987",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="186--194",
+abstract="In this paper we describe simple identification and signature schemes which enable any user to prove his identity and the authenticity of his messages to any other user without shared or public keys. The schemes are provably secure against any known or chosen message attack if factoring is difficult, and typical implementations require only 1{\%} to 4{\%} of the number of modular multiplications required by the RSA scheme. Due to their simplicity, security and speed, these schemes are ideally suited for microprocessor-based devices such as smart cards, personal computers, and remote control systems.",
+isbn="978-3-540-47721-1"
+}
+
+
+@article{cha81,
+	author = {Chaum, David L.},
+	title = {Untraceable electronic mail, return addresses, and digital pseudonyms},
+	year = {1981},
+	issue_date = {Feb. 1981},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	volume = {24},
+	number = {2},
+	issn = {0001-0782},
+	url = {https://doi.org/10.1145/358549.358563},
+	doi = {10.1145/358549.358563},
+	journal = {Commun. ACM},
+	month = {feb},
+	pages = {84–90},
+	numpages = {7},
+	keywords = {digital signatures, electronic mail, privacy, public key cryptosystems, security, traffic analysis}
+}
+@InProceedings{dk00,
+author="Desmedt, Yvo
+and Kurosawa, Kaoru",
+editor="Preneel, Bart",
+title="How to Break a Practical MIX and Design a New One",
+booktitle="Advances in Cryptology --- EUROCRYPT 2000",
+year="2000",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="557--572",
+abstract="A MIX net takes a list of ciphertexts (c1, ..., cN) and outputs a permuted list of the plaintexts (m1, ..., mN) without revealing the relationship between (c1,..., cN) and (m1, ...,mN). This paper first shows that the Jakobsson's MIX net of Eurocrypt'98, which was believed to be resilient and very efficient, is broken. We next propose an efficient t-resilient MIX net with O(t2) servers in which the cost of each MIX server is O(N). Two new concepts are introduced, existential-honesty and limited-open-verification. They will be useful for distributed computation in general.",
+isbn="978-3-540-45539-4"
+}
+@inproceedings {jjr02,
+author = {Markus Jakobsson and Ari Juels and Ronald L. Rivest},
+title = {Making Mix Nets Robust for Electronic Voting by Randomized Partial Checking},
+booktitle = {11th USENIX Security Symposium (USENIX Security 02)},
+year = {2002},
+address = {San Francisco, CA},
+url = {https://www.usenix.org/conference/11th-usenix-security-symposium/making-mix-nets-robust-electronic-voting-randomized},
+publisher = {USENIX Association},
+month = aug
+}
+@InProceedings{pbdv04,
+author="Peng, Kun
+and Boyd, Colin
+and Dawson, Ed
+and Viswanathan, Kapali",
+editor="Bao, Feng
+and Deng, Robert
+and Zhou, Jianying",
+title="A Correct, Private, and Efficient Mix Network",
+booktitle="Public Key Cryptography -- PKC 2004",
+year="2004",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="439--454",
+abstract="A mix network achieving strong correctness and privacy is proposed. The degree of correctness and privacy are precisely stated and a formal proof of correctness is given. A grouping function is employed to achieve stronger correctness and higher efficiency without compromising strong privacy. In order to further improve the efficiency of the mix network a new batch verification technique, suitable for verifying multiple proofs of knowledge, is presented together with a formal proof of soundness.",
+isbn="978-3-540-24632-9"
+}
+
+@InProceedings{wik02,
+author="Wikstr{\"o}m, Douglas",
+editor="Menezes, Alfred
+and Sarkar, Palash",
+title="The Security of a Mix-Center Based on a Semantically Secure Cryptosystem",
+booktitle="Progress in Cryptology --- INDOCRYPT 2002",
+year="2002",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="368--381",
+abstract="We introduce a definition of a re-encryption mix-center, and a definition of security for such a mix-center. Then we prove that any semantically secure public key system, which allows re-encryption, can be used to construct a secure mix-center.",
+isbn="978-3-540-36231-9"
+}
+@InProceedings{sk95,
+author="Sako, Kazue
+and Kilian, Joe",
+editor="Guillou, Louis C.
+and Quisquater, Jean-Jacques",
+title="Receipt-Free Mix-Type Voting Scheme",
+booktitle="Advances in Cryptology --- EUROCRYPT '95",
+year="1995",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="393--403",
+abstract="We present a receipt-free voting scheme based on a mix- type anonymous channel [Cha81, PIK93]. The receipt-freeness property [BT94] enables voters to hide how they have voted even from a powerful adversary who is trying to coerce him. The work of [BT94] gave the first solution using a voting booth, which is a hardware assumption not unlike that in current physical elections. In our proposed scheme, we reduce the physical assumptions required to obtain receipt-freeness. Our sole physical assumption is the existence of a private channel through which the center can send the voter a message without fear of eavesdropping.",
+isbn="978-3-540-49264-1"
+}
+
+@InProceedings{abe98,
+author="Abe, Masayuki",
+editor="Nyberg, Kaisa",
+title="Universally verifiable mix-net with verification work independent of the number of mix-servers",
+booktitle="Advances in Cryptology --- EUROCRYPT'98",
+year="1998",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="437--447",
+abstract="In this paper we construct a universally verifiable Mix-net where the amount of work done by a verifier is independent of the number of mix-servers. Furthermore, the computational task of each mix-server is constant against the number of mix-servers except for some negligible tasks like addition. The scheme is robust, too.",
+isbn="978-3-540-69795-4"
+}
+
+@InProceedings{abe99,
+author="Abe, Masayuki",
+editor="Lam, Kwok-Yan
+and Okamoto, Eiji
+and Xing, Chaoping",
+title="Mix-Networks on Permutation Networks",
+booktitle="Advances in Cryptology - ASIACRYPT'99",
+year="1999",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="258--273",
+abstract="Two universally verifiable mix-net schemes that eliminate the cumbersome Cut-and-Choose method are presented. The construction is based on a permutation network composed of a network of `switches' that transposes two inputs. For N inputs and t tolerable corrupt mix-servers, the schemes achieve {\$}{\{}{\backslash}cal O{\}}(t N {\backslash}log N){\$}efficiency in computation and communication while previous schemes require {\$}{\{}{\backslash}cal O{\}}({\backslash}kappa m N){\$}for error probability 2{\thinspace}−{\thinspace}$\kappa$ and m mix-servers. The schemes suit small to middle-scale secret-ballot electronic elections. Moreover, one of the schemes enjoys less round complexity so that servers do not need to talk to other servers except their neighbors unless disruption occurs.",
+isbn="978-3-540-48000-6"
+}
+
+@inproceedings{ah01,
+  title={Remarks on Mix-Network Based on Permutation Networks},
+  booktitle={Public Key Cryptography, 4th International Workshop on Practice and Theory in Public Key Cryptography, PKC 2001, Cheju Island, Korea, February 13-15, 2001, Proceedings},
+  series={Lecture Notes in Computer Science},
+  publisher={Springer},
+  volume={1992},
+  pages={317-324},
+  doi={10.1007/3-540-44586-2_23},
+  author={Masayuki Abe and Fumitaka Hoshino},
+  year=2001
+}
+@Inbook{fs01,
+author="Furukawa, Jun
+and Mori, Kengo
+and Sako, Kazue",
+editor="Chaum, David
+and Jakobsson, Markus
+and Rivest, Ronald L.
+and Ryan, Peter Y. A.
+and Benaloh, Josh
+and Kutylowski, Miroslaw
+and Adida, Ben",
+title="An Implementation of a Mix-Net Based Network Voting Scheme and Its Use in a Private Organization",
+bookTitle="Towards Trustworthy Elections: New Directions in Electronic Voting",
+year="2010",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="141--154",
+abstract="We discuss an implementation of a network voting scheme based on mix-net technology. We employed the scheme presented at Financial Cryptography 2002, but replaced the numeric computations with those on a elliptic curve. As a result, we obtained three times speed up and data length shortening to one third. The system has been employed in a private organization with roughly 20,000 voters since 2004.",
+isbn="978-3-642-12980-3",
+doi="10.1007/978-3-642-12980-3_8",
+url="https://doi.org/10.1007/978-3-642-12980-3_8"
+}
+
+@inproceedings{nef01,
+author = {Neff, C. Andrew},
+title = {A verifiable secret shuffle and its application to e-voting},
+year = {2001},
+isbn = {1581133855},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/501983.502000},
+doi = {10.1145/501983.502000},
+abstract = {We present a mathematical construct which provides a cryptographic protocol to verifiably shuffle a sequence of k modular integers, and discuss its application to secure, universally verifiable, multi-authority election schemes. The output of the shuffle operation is another sequence of k modular integers, each of which is the same secret power of a corresponding input element, but the order of elements in the output is kept secret. Though it is a trivial matter for the "shuffler" (who chooses the permutation of the elements to be applied) to compute the output from the input, the construction is important because it provides a linear size proof of correctness for the output sequence (i.e. a proof that it is of the form claimed) that can be checked by an arbitrary verifiers. The complexity of the protocol improves on that of Furukawa-Sako[16] both measured by number of exponentiations and by overall size.The protocol is shown to be honest-verifier zeroknowledge in a special case, and is computational zeroknowledge in general. On the way to the final result, we also construct a generalization of the well known Chaum-Pedersen protocol for knowledge of discrete logarithm equality [10], [7]. In fact, the generalization specializes exactly to the Chaum-Pedersen protocol in the case k = 2. This result may be of interest on its own.An application to electronic voting is given that matches the features of the best current protocols with significant efficiency improvements. An alternative application to electronic voting is also given that introduces an entirely new paradigm for achieving Universally Verifiable elections.},
+booktitle = {Proceedings of the 8th ACM Conference on Computer and Communications Security},
+pages = {116–125},
+numpages = {10},
+keywords = {anonymous credentials, electronic voting, honest-verifier, mix-net, permutation, universal verifiability, verifiable mix, verifiable shuffle, zeroknowledge},
+location = {Philadelphia, PA, USA},
+series = {CCS '01}
+}
+
+@article{nef03,
+author = {Neff, C},
+year = {2004},
+month = {01},
+pages = {},
+title = {Verifiable mixing (shuffling) of ElGamal pairs}
+}
+
+@Article{gro10,
+author={Groth, Jens},
+title={A Verifiable Secret Shuffle of Homomorphic Encryptions},
+journal={Journal of Cryptology},
+year={2010},
+month={Oct},
+day={01},
+volume={23},
+number={4},
+pages={546-579},
+abstract={A shuffle consists of a permutation and re-encryption of a set of input ciphertexts. One application of shuffles is to build mix-nets. We suggest an honest verifier zero-knowledge argument for the correctness of a shuffle of homomorphic encryptions.},
+issn={1432-1378},
+doi={10.1007/s00145-010-9067-9},
+url={https://doi.org/10.1007/s00145-010-9067-9}
+}
+
+@InProceedings{gi08,
+author="Groth, Jens
+and Ishai, Yuval",
+editor="Smart, Nigel",
+title="Sub-linear Zero-Knowledge Argument for Correctness of a Shuffle",
+booktitle="Advances in Cryptology -- EUROCRYPT 2008",
+year="2008",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="379--396",
+abstract="A shuffle of a set of ciphertexts is a new set of ciphertexts with the same plaintexts in permuted order. Shuffles of homomorphic encryptions are a key component in mix-nets, which in turn are used in protocols for anonymization and voting. Since the plaintexts are encrypted it is not directly verifiable whether a shuffle is correct, and it is often necessary to prove the correctness of a shuffle using a zero-knowledge proof or argument.",
+isbn="978-3-540-78967-3"
+}
+
+
+@misc{bpshuffle,
+      author = {Behzad Abdolmaleki and Prastudy Fauzi and Toomas Krips and Janno Siim},
+      title = {Shuffle Arguments Based on Subset-Checking},
+      howpublished = {Cryptology {ePrint} Archive, Paper 2024/1056},
+      year = {2024},
+      url = {https://eprint.iacr.org/2024/1056}
+}
+
 @misc{decaf,
       author = {Mike Hamburg},
       title = {Decaf: Eliminating cofactors through point compression},
@@ -50,6 +279,13 @@ isbn="978-3-540-39568-3"
         title = "\textit{The Rust Programming Language Book} {[Online]}",
         year = {2024},
         howpublished={Avaliable: \url{https://doc.rust-lang.org/book/}},
+}
+
+@electronic{andshuf,
+	author = {Dalskov, Anders},
+	title = "\textit{Cryptographic Shuffle ala. Bayer and Groth.}",
+	year = 2021,
+	howpublished={Available: \url{https://github.com/anderspkd/groth-shuffle}},
 }
 
 @electronic{dalek:curve,

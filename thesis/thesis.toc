@@ -1,64 +1,47 @@
 \contentsline {chapter}{Abstract}{i}{chapter*.1}%
 \contentsline {chapter}{Acknowledgements}{ii}{chapter*.2}%
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Zero-Knowledge Proofs}{1}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Bayer-Groth Shuffle Argument}{2}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Special honest verifier zero-knowledge argument of knowledge}{2}{section.1.3}%
-\contentsline {section}{\numberline {1.4}The Fiat-Shamir heuristic}{2}{section.1.4}%
-\contentsline {section}{\numberline {1.5}The Schwartz-Zippel lemma}{2}{section.1.5}%
-\contentsline {section}{\numberline {1.6}The Rust Programming Language}{2}{section.1.6}%
-\contentsline {section}{\numberline {1.7}Previous Implementations and the Need for Rust}{3}{section.1.7}%
-\contentsline {subsubsection}{Advantages of a Rust Implementation}{3}{section*.5}%
-\contentsline {section}{\numberline {1.8}Objectives}{3}{section.1.8}%
-\contentsline {section}{\numberline {1.9}Thesis Structure}{4}{section.1.9}%
-\contentsline {chapter}{\numberline {2}Related Work}{5}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Efficient ZK Argument for Correctness of a Shuffle}{5}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Decaf: Eliminating cofactors through point compression}{6}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Existing Implementations}{6}{section.2.3}%
-\contentsline {subsection}{\numberline {2.3.1}Mental Poker}{6}{subsection.2.3.1}%
-\contentsline {subsection}{\numberline {2.3.2}Bayer-Groth Mixnet}{7}{subsection.2.3.2}%
-\contentsline {subsection}{\numberline {2.3.3}Practical Ad-Hoc Implementations}{7}{subsection.2.3.3}%
-\contentsline {chapter}{\numberline {3}Methodology}{8}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Related Concepts}{8}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}ElGamal Encryption}{8}{subsection.3.1.1}%
-\contentsline {subsubsection}{Key Components}{8}{section*.6}%
-\contentsline {subsubsection}{Encryption Process}{8}{section*.7}%
-\contentsline {subsubsection}{Decryption Process}{9}{section*.8}%
-\contentsline {subsubsection}{Applications}{9}{section*.9}%
-\contentsline {subsection}{\numberline {3.1.2}Pedersen Commitment}{9}{subsection.3.1.2}%
-\contentsline {subsubsection}{Key Components}{9}{section*.10}%
-\contentsline {subsubsection}{Commitment Process}{9}{section*.11}%
-\contentsline {subsubsection}{Revealing the Commitment}{10}{section*.12}%
-\contentsline {subsubsection}{Security}{10}{section*.13}%
-\contentsline {subsection}{\numberline {3.1.3}Homomorphic Property}{10}{subsection.3.1.3}%
-\contentsline {subsubsection}{Homomorphism of Pedersen Commitments}{10}{section*.14}%
-\contentsline {subsubsection}{Homomorphims of ElGamal Ciphertexts}{11}{section*.15}%
-\contentsline {section}{\numberline {3.2}Ristretto Points}{11}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Prime-Order Group Properties}{11}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Unique Encoding and Decoding}{12}{subsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.2.3}Implementation of Choice}{12}{subsection.3.2.3}%
-\contentsline {chapter}{\numberline {4}Implementation}{13}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Commitments and Encryptions}{13}{section.4.1}%
-\contentsline {section}{\numberline {4.2}System Design}{14}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Common Reference}{14}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}Provers}{15}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Main Challenges}{15}{section.4.3}%
-\contentsline {chapter}{\numberline {5}Results}{17}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Implications}{17}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Limitations}{19}{section.5.2}%
-\contentsline {chapter}{\numberline {6}Conclusion}{20}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Future Work}{20}{section.6.1}%
-\contentsline {chapter}{References}{21}{section.6.1}%
-\contentsline {chapter}{\numberline {A}Appendix A}{23}{appendix.A}%
-\contentsline {section}{\numberline {A.1}ElGamal Encryption}{23}{section.A.1}%
-\contentsline {subsection}{\numberline {A.1.1}A.1 Overview of ElGamal Encryption}{23}{subsection.A.1.1}%
-\contentsline {subsection}{\numberline {A.1.2}A.2 Key Generation}{23}{subsection.A.1.2}%
-\contentsline {subsection}{\numberline {A.1.3}A.3 Encryption Process}{23}{subsection.A.1.3}%
-\contentsline {subsection}{\numberline {A.1.4}A.4 Decryption Process}{24}{subsection.A.1.4}%
-\contentsline {subsection}{\numberline {A.1.5}A.5 Homomorphic Properties}{24}{subsection.A.1.5}%
-\contentsline {section}{\numberline {A.2}Pedersen Commitments}{24}{section.A.2}%
-\contentsline {subsection}{\numberline {A.2.1}A.1 Overview of Pedersen Commitments}{24}{subsection.A.2.1}%
-\contentsline {subsection}{\numberline {A.2.2}A.2 Commitment Scheme}{24}{subsection.A.2.2}%
-\contentsline {subsection}{\numberline {A.2.3}A.3 Opening the Commitment}{25}{subsection.A.2.3}%
-\contentsline {subsection}{\numberline {A.2.4}A.4 Homomorphic Properties}{25}{subsection.A.2.4}%
-\contentsline {subsection}{\numberline {A.2.5}A.5 Security Properties}{25}{subsection.A.2.5}%
+\contentsline {section}{\numberline {1.1}Bayer-Groth Shuffle Argument}{1}{section.1.1}%
+\contentsline {section}{\numberline {1.2}The Rust Programming Language}{2}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Previous Implementations and the Need for Rust}{2}{section.1.3}%
+\contentsline {chapter}{\numberline {2}Related Work}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Shuffle Arguments}{3}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Decaf: Eliminating cofactors through point compression}{4}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Existing Implementations}{4}{section.2.3}%
+\contentsline {chapter}{\numberline {3}Objective and Structure}{5}{chapter.3}%
+\contentsline {chapter}{\numberline {4}Methodology}{6}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Pedersen Commitment}{6}{section.4.1}%
+\contentsline {subsubsection}{Commitment Process}{6}{section*.9}%
+\contentsline {section}{\numberline {4.2}ElGamal Encryption}{7}{section.4.2}%
+\contentsline {subsubsection}{Decryption Process}{8}{section*.14}%
+\contentsline {subsubsection}{Applications}{8}{section*.15}%
+\contentsline {section}{\numberline {4.3}Homomorphism}{8}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Zero-Knowledge Proofs}{9}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Efficient ZK Argument for Correctness of a Shuffle}{11}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Ristretto Points}{15}{section.4.6}%
+\contentsline {chapter}{\numberline {5}Implementation}{17}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Commitments and Encryptions}{17}{section.5.1}%
+\contentsline {subsubsection}{Vectors}{18}{section*.30}%
+\contentsline {subsubsection}{Ciphertexts}{18}{section*.31}%
+\contentsline {subsubsection}{Commitments}{18}{section*.32}%
+\contentsline {section}{\numberline {5.2}System Design}{18}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Main Challenges}{20}{section.5.3}%
+\contentsline {chapter}{\numberline {6}Results}{22}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Implications}{22}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Limitations}{24}{section.6.2}%
+\contentsline {chapter}{\numberline {7}Conclusion}{25}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Future Work}{26}{chapter.8}%
+\contentsline {chapter}{References}{27}{chapter.8}%
+\contentsline {chapter}{\numberline {A}Appendix A}{31}{appendix.A}%
+\contentsline {section}{\numberline {A.1}ElGamal Encryption}{31}{section.A.1}%
+\contentsline {subsection}{\numberline {A.1.1}Overview of ElGamal Encryption}{31}{subsection.A.1.1}%
+\contentsline {subsection}{\numberline {A.1.2}Key Generation}{31}{subsection.A.1.2}%
+\contentsline {subsection}{\numberline {A.1.3}Encryption Process}{31}{subsection.A.1.3}%
+\contentsline {subsection}{\numberline {A.1.4}Decryption Process}{32}{subsection.A.1.4}%
+\contentsline {subsection}{\numberline {A.1.5}Homomorphic Properties}{32}{subsection.A.1.5}%
+\contentsline {section}{\numberline {A.2}Pedersen Commitments}{32}{section.A.2}%
+\contentsline {subsection}{\numberline {A.2.1}Overview of Pedersen Commitments}{32}{subsection.A.2.1}%
+\contentsline {subsection}{\numberline {A.2.2}Commitment Scheme}{32}{subsection.A.2.2}%
+\contentsline {subsection}{\numberline {A.2.3}Opening the Commitment}{33}{subsection.A.2.3}%
+\contentsline {subsection}{\numberline {A.2.4}Homomorphic Properties}{33}{subsection.A.2.4}%
+\contentsline {subsection}{\numberline {A.2.5}Security Properties}{33}{subsection.A.2.5}%

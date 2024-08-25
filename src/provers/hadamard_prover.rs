@@ -258,11 +258,11 @@ impl HadamProver {
 
 #[test]
 fn test_base() {
-    use rand::rngs::StdRng;
+    use rand_chacha::ChaCha20Rng;
     use rand::SeedableRng;
     let mut prover_transcript = Transcript::new(b"testHadamProof");
 
-    let mut rng = StdRng::seed_from_u64(2);//from_entropy();
+    let mut rng = ChaCha20Rng::from_entropy();
     let m: usize = 6;
     let n: usize = 4;
     let mut com_ref = CommonRef::new((m*n) as u64, rng);

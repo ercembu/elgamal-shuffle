@@ -5,8 +5,9 @@ use rust_elgamal::{EncryptionKey,
                     Scalar, 
                     Ciphertext, IsIdentity};
 
-use rand::rngs::StdRng;
+use rand_chacha::ChaCha20Rng;
 use rand::prelude::SliceRandom;
+use rand_core::RngCore;
 
 use std::vec::Vec;
 use std::iter;
@@ -21,11 +22,11 @@ pub struct CommonRef {
     pub pk : EncryptionKey,
     pub dk : DecryptionKey,
     pub ck : Vec<RistrettoPoint>,
-    pub rng: StdRng,
+    pub rng: ChaCha20Rng,
 }
 
 impl CommonRef {
-    pub fn new(n: u64, mut rng: StdRng) -> Self {
+    pub fn new(n: u64, mut rng: ChaCha20Rng) -> Self {
         let dk = DecryptionKey::new(&mut rng);
         let pk = dk.encryption_key();
 
@@ -143,10 +144,10 @@ impl CommonRef {
 
 #[test]
 fn test_homo_add() {
-    use rand::rngs::StdRng;
+    use rand_chacha::ChaCha20Rng;
     use rand::SeedableRng;
     use crate::traits::traits::Addition;
-    let mut rng = StdRng::from_entropy();
+    let mut rng = ChaCha20Rng::from_entropy();
     let m: usize = 13;
     let n: usize = 4;
     let mut com_ref = CommonRef::new(n as u64, rng);
@@ -171,10 +172,10 @@ fn test_homo_add() {
 }
 #[test]
 fn test_homo_exp() {
-    use rand::rngs::StdRng;
+    use rand_chacha::ChaCha20Rng;
     use rand::SeedableRng;
     use crate::traits::traits::Multiplicat;
-    let mut rng = StdRng::from_entropy();
+    let mut rng = ChaCha20Rng::from_entropy();
     let m: usize = 13;
     let n: usize = 4;
     let mut com_ref = CommonRef::new(n as u64, rng);
