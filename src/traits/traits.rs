@@ -36,9 +36,16 @@ impl EasySize for Scalar {
 }
 
 impl EasySize for RistrettoPoint {
+    fn ez_size(&self) -> usize{
+        mem::size_of_val(&self.compress())
+    }
 }
 
 impl EasySize for Ciphertext{
+    fn ez_size(&self) -> usize{
+        let inner = self.inner();
+        mem::size_of_val(&inner.0.compress()) + mem::size_of_val(&inner.1.compress())
+    }
 }
 
 pub trait HeapSize {

@@ -218,9 +218,9 @@ impl HadamProver {
 
         let proof_time = zero_prover.start_time();
         let zero_proof: ZeroProof = zero_prover.prove(trans);
-        println!("\n");
-        println!("Zero Proof Time:\t{}", zero_prover.elapsed(proof_time));
-        println!("Zero Proof Size:\t{}", zero_proof.heap_size());
+        //println!("\n");
+        //println!("Zero Proof Time:\t{}", zero_prover.elapsed(proof_time));
+        //println!("Zero Proof Size:\t{}", zero_proof.heap_size());
 
         
         (zero_prover,
@@ -250,8 +250,8 @@ impl HadamProver {
                                                     Scalar::zero()));
         let verify_time = zero_prover.start_time();
         zero_prover.verify(trans, proof.zero_proof)?;
-        println!("\n");
-        println!("Zero Proof Verify Time:\t{}", zero_prover.elapsed(verify_time));
+        //println!("\n");
+        //println!("Zero Proof Verify Time:\t{}", zero_prover.elapsed(verify_time));
         Ok(())
     }
 }

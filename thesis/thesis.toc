@@ -25,24 +25,24 @@
 \contentsline {subsubsection}{Ciphertexts}{18}{section*.31}%
 \contentsline {subsubsection}{Commitments}{18}{section*.32}%
 \contentsline {section}{\numberline {5.2}System Design}{19}{section.5.2}%
-\contentsline {subsubsection}{The Random Oracle}{19}{section*.35}%
-\contentsline {section}{\numberline {5.3}Main Challenges}{20}{section.5.3}%
+\contentsline {subsubsection}{The Random Oracle}{19}{section*.34}%
+\contentsline {section}{\numberline {5.3}Main Challenges}{21}{section.5.3}%
 \contentsline {chapter}{\numberline {6}Results}{22}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Implications}{22}{section.6.1}%
+\contentsline {section}{\numberline {6.1}Implications}{24}{section.6.1}%
 \contentsline {section}{\numberline {6.2}Limitations}{24}{section.6.2}%
-\contentsline {chapter}{\numberline {7}Conclusion}{25}{chapter.7}%
-\contentsline {chapter}{\numberline {8}Future Work}{26}{chapter.8}%
-\contentsline {chapter}{References}{27}{chapter.8}%
-\contentsline {chapter}{\numberline {A}Appendix A}{31}{appendix.A}%
-\contentsline {section}{\numberline {A.1}ElGamal Encryption}{31}{section.A.1}%
-\contentsline {subsection}{\numberline {A.1.1}Overview of ElGamal Encryption}{31}{subsection.A.1.1}%
-\contentsline {subsection}{\numberline {A.1.2}Key Generation}{31}{subsection.A.1.2}%
-\contentsline {subsection}{\numberline {A.1.3}Encryption Process}{31}{subsection.A.1.3}%
-\contentsline {subsection}{\numberline {A.1.4}Decryption Process}{32}{subsection.A.1.4}%
-\contentsline {subsection}{\numberline {A.1.5}Homomorphic Properties}{32}{subsection.A.1.5}%
-\contentsline {section}{\numberline {A.2}Pedersen Commitments}{32}{section.A.2}%
-\contentsline {subsection}{\numberline {A.2.1}Overview of Pedersen Commitments}{32}{subsection.A.2.1}%
-\contentsline {subsection}{\numberline {A.2.2}Commitment Scheme}{32}{subsection.A.2.2}%
-\contentsline {subsection}{\numberline {A.2.3}Opening the Commitment}{33}{subsection.A.2.3}%
-\contentsline {subsection}{\numberline {A.2.4}Homomorphic Properties}{33}{subsection.A.2.4}%
-\contentsline {subsection}{\numberline {A.2.5}Security Properties}{33}{subsection.A.2.5}%
+\contentsline {chapter}{\numberline {7}Conclusion}{26}{chapter.7}%
+\contentsline {chapter}{\numberline {8}Future Work}{27}{chapter.8}%
+\contentsline {chapter}{References}{28}{chapter.8}%
+\contentsline {chapter}{\numberline {A}Appendix A}{32}{appendix.A}%
+\contentsline {section}{\numberline {A.1}ElGamal Encryption}{32}{section.A.1}%
+\contentsline {subsection}{\numberline {A.1.1}Overview of ElGamal Encryption}{32}{subsection.A.1.1}%
+\contentsline {subsection}{\numberline {A.1.2}Key Generation}{32}{subsection.A.1.2}%
+\contentsline {subsection}{\numberline {A.1.3}Encryption Process}{32}{subsection.A.1.3}%
+\contentsline {subsection}{\numberline {A.1.4}Decryption Process}{33}{subsection.A.1.4}%
+\contentsline {subsection}{\numberline {A.1.5}Homomorphic Properties}{33}{subsection.A.1.5}%
+\contentsline {section}{\numberline {A.2}Pedersen Commitments}{33}{section.A.2}%
+\contentsline {subsection}{\numberline {A.2.1}Overview of Pedersen Commitments}{33}{subsection.A.2.1}%
+\contentsline {subsection}{\numberline {A.2.2}Commitment Scheme}{33}{subsection.A.2.2}%
+\contentsline {subsection}{\numberline {A.2.3}Opening the Commitment}{34}{subsection.A.2.3}%
+\contentsline {subsection}{\numberline {A.2.4}Homomorphic Properties}{34}{subsection.A.2.4}%
+\contentsline {subsection}{\numberline {A.2.5}Security Properties}{34}{subsection.A.2.5}%

@@ -1,3 +1,4 @@
+//! Struct Proof and Prover for Shuffle Argument
 #![allow(non_snake_case)]
 use std::mem;
 
@@ -30,14 +31,14 @@ use crate::traits::{traits::{Timeable,
 use crate::utils::{utils::Challenges,
                     transcript::TranscriptProtocol,
                     errors::ProofError};
-
+///	Data struct for final proof arguments to be sent to the verification method
 #[derive(Clone)]
 pub struct ShuffleProof {
-    pub(crate) c_A : Vec<RistrettoPoint>,
-    pub(crate) c_B : Vec<RistrettoPoint>,
-    pub(crate) mexp: MexpOptimProof,
-    pub(crate) prod: ProdProof,
-    pub(crate) y: Scalar,
+    c_A : Vec<RistrettoPoint>,
+    c_B : Vec<RistrettoPoint>,
+    mexp: MexpOptimProof,
+    prod: ProdProof,
+    y: Scalar,
 }
 
 impl HeapSize for ShuffleProof {
@@ -50,7 +51,7 @@ impl HeapSize for ShuffleProof {
     }
 }
 
-///Prover struct for Shuffle Argument
+///Prover struct for initial Shuffle Arguments
 #[derive(Clone)]
 pub struct ShuffleProver {
     /// N = m * n, cards
@@ -89,7 +90,7 @@ impl ShuffleProver {
         rho: Vec<Scalar>,
         com_ref: CommonRef,
     ) -> Self {
-        println!("m: {}, n: {}, mu: {}", m, n, mu);
+        //println!("m: {}, n: {}, mu: {}", m, n, mu);
         Self {
             m: m,
             n: n,
@@ -161,9 +162,9 @@ impl ShuffleProver {
         let mexp_time = mexp_prover.start_time();
         let mexp_proof = mexp_prover.prove_optim(trans, self.mu);
 
-        println!("\n");
-        println!("Opt Mexp Proof Time:\t{}", mexp_prover.elapsed(mexp_time));
-        println!("Opt Mexp Proof Size:\t{}", mexp_proof.heap_size());
+        //println!("\n");
+        //println!("Opt Mexp Proof Time:\t{}", mexp_prover.elapsed(mexp_time));
+        //println!("Opt Mexp Proof Size:\t{}", mexp_proof.heap_size());
         //Challenge y, z
         let y = trans.challenge_scalar(b"y");
         let z = trans.challenge_scalar(b"z");
@@ -223,9 +224,9 @@ impl ShuffleProver {
              sv_prover, 
              hadamard_prover, 
              prod_proof) = prod_prover.prove(trans);
-        println!("\n");
-        println!("Product Proof Time:\t{}", prod_prover.elapsed(product_time));
-        println!("Product Proof Size:\t{}", mem::size_of_val(&prod_proof));
+        //println!("\n");
+        //println!("Product Proof Time:\t{}", prod_prover.elapsed(product_time));
+        //println!("Product Proof Size:\t{}", mem::size_of_val(&prod_proof));
 
 
 
@@ -259,15 +260,15 @@ impl ShuffleProver {
         let mexp_proof = proof.mexp;
         let mexp_time = mexp_prover.start_time();
         mexp_prover.verify_optim(mexp_proof, trans, self.mu)?;
-        println!("\n");
-        println!("Opt Mexp Verify Time:\t{}", mexp_prover.elapsed(mexp_time));
+        //println!("\n");
+        //println!("Opt Mexp Verify Time:\t{}", mexp_prover.elapsed(mexp_time));
         let prod_time = prod_prover.start_time();
         assert!(prod_prover.verify(trans, proof.prod, 
                                    hadamard_prover,
                                    zero_prover,
                                    sv_prover).is_ok());
-        println!("\n");
-        println!("Product Verify Time:\t{}", prod_prover.elapsed(prod_time));
+        //println!("\n");
+        //println!("Product Verify Time:\t{}", prod_prover.elapsed(prod_time));
 
         Ok(())
     }
@@ -420,7 +421,7 @@ fn test_prover_obs() {
                                                         )
                                         )
                                     .collect();
-    println!("Setup Time:\t{}", setup_time.elapsed().unwrap().as_millis());
+    //println!("Setup Time:\t{}", setup_time.elapsed().unwrap().as_millis());
 
     let perm_time = SystemTime::now();
     let pi: Vec<u64> = cr.rand_perm(&(1..=((m*n) as u64)).collect());
@@ -439,7 +440,7 @@ fn test_prover_obs() {
              b_ + c_p
              ).collect();
 
-    println!("Perm Time:\t{}", perm_time.elapsed().unwrap().as_millis());
+    //println!("Perm Time:\t{}", perm_time.elapsed().unwrap().as_millis());
 
     let mut prover_transcript = Transcript::new(b"testShuffleProof");
     let mut shuffle_prover = ShuffleProver::new(
@@ -462,9 +463,9 @@ fn test_prover_obs() {
              mut shuffle_proof) = shuffle_prover.prove(&mut prover_transcript);
     
 
-    println!("\n");
-    println!("Shuffle Proof Time:\t{}", shuffle_prover.elapsed(proof_time));
-    println!("Shuffle Proof Size:\t{}", shuffle_proof.heap_size());
+    //println!("\n");
+    //println!("Shuffle Proof Time:\t{}", shuffle_prover.elapsed(proof_time));
+    //println!("Shuffle Proof Size:\t{}", shuffle_proof.heap_size());
 
     let mut verifier_transcript = Transcript::new(b"testShuffleProof");
 
@@ -477,7 +478,7 @@ fn test_prover_obs() {
                     prod_prover,
                     mexp_prover)
             .is_ok());
-    println!("\n");
-    println!("Shuffle Verify Time:\t{}", shuffle_prover.elapsed(verify_time));
+    //println!("\n");
+    //println!("Shuffle Verify Time:\t{}", shuffle_prover.elapsed(verify_time));
 }
 

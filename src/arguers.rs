@@ -1,3 +1,4 @@
+//!Common Reference Key utility Struct
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 use rust_elgamal::{EncryptionKey, 
@@ -18,11 +19,16 @@ use curve25519_dalek::traits::MultiscalarMul;
 use crate::utils::enums::EGInp;
 
 #[derive(Clone)]
+///Common Reference Key
 pub struct CommonRef {
-    pub pk : EncryptionKey,
-    pub dk : DecryptionKey,
-    pub ck : Vec<RistrettoPoint>,
-    pub rng: ChaCha20Rng,
+    ///ElGamal Encryption Key
+    pk : EncryptionKey,
+    ///ElGamal Decryption Key
+    dk : DecryptionKey,
+    ///Pedersen Generators
+    ck : Vec<RistrettoPoint>,
+    ///CryptoSafePseudoRng
+    rng: ChaCha20Rng,
 }
 
 impl CommonRef {
@@ -34,7 +40,6 @@ impl CommonRef {
         Self{pk: *pk, ck: pd_gen, dk: dk, rng: rng}
     }
 
-    //Correct form: |a| = N; N = m * n; |r| = m;
     pub fn commit_vec(
         &mut self,
         a: Vec<Scalar>,

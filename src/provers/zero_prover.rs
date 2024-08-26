@@ -364,7 +364,7 @@ fn test_base() {
     let b: Vec<Vec<Scalar>> = vec![vec![com_ref.rand_scalar(); m]; n];
     let s: Vec<Scalar> = vec![com_ref.rand_scalar(); m];
 
-    let y: Scalar = Scalar::random(&mut com_ref.rng);
+    let y: Scalar = com_ref.rand_scalar();
 
     //Convert to column matrices for randomness
     let mut a_col = a.to_col();

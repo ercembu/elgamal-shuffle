@@ -29,21 +29,21 @@ use crate::utils::{utils::Challenges,
 #[derive(Clone, Default)]
 pub struct MexpProof {
     ///Commitment to the beggining blinding vector
-    pub(crate) c_A0: RistrettoPoint,
+    c_A0: RistrettoPoint,
     ///Commitment to the blinding values
-    pub(crate) c_Bk: Vec<RistrettoPoint>,
+    c_Bk: Vec<RistrettoPoint>,
     ///Message products of the blinded diagonals
-    pub(crate) Ek  : Vec<Ciphertext>,
+    Ek  : Vec<Ciphertext>,
     ///Blinded column vectors
-    pub(crate) a_  : Vec<Scalar>,
+    a_  : Vec<Scalar>,
     ///Blinding value for the column vectors
-    pub(crate) r   : Scalar,
+    r   : Scalar,
     ///X Challenged blinding values
-    pub(crate) b   : Scalar,
+    b   : Scalar,
     ///X Challenged blinding values for b values
-    pub(crate) s   : Scalar,
+    s   : Scalar,
     ///X Challenged ElGamal Blinding Values
-    pub(crate) tau : Scalar,
+    tau : Scalar,
 }
 
 impl HeapSize for MexpProof {
@@ -65,17 +65,17 @@ impl HeapSize for MexpProof {
 #[derive(Clone)]
 pub struct MexpOptimProof {
     ///Committed Blinding values for the ElGamal messages
-    pub(crate) c_b: Vec<RistrettoPoint>,
+    c_b: Vec<RistrettoPoint>,
     ///Result of the Blinded Diagonal Product
-    pub(crate) E_k: Vec<Ciphertext>,
+    E_k: Vec<Ciphertext>,
     ///Open Blinding values for elGamal messages
-    pub(crate) b: Scalar,
+    b: Scalar,
     ///Hiding value for the commitment of the blinding values
-    pub(crate) s: Scalar,
+    s: Scalar,
     ///X Blinded Messages
-    pub(crate) open_C: Ciphertext,
+    open_C: Ciphertext,
     ///Diagonal Message challenged by x and hidden via b values
-    pub(crate) C_: Ciphertext,
+    C_: Ciphertext,
 }
 impl HeapSize for MexpOptimProof {
     fn heap_size(&self) -> usize {

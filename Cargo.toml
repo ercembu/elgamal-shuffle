@@ -23,6 +23,8 @@ std = ["curve25519-dalek/std", "rand_core/std"]
 
 [dependencies]
 # simd_backend extends u64_backend
+signal-hook = "0.3.4"
+plotters = "0.3.6"
 cargo-readme = {version="*"}
 rand_chacha = {version="*"}
 katex-doc = {version="*"}

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":["Addition","EGMult","EasySize","Hadamard","HeapSize","InnerProduct","Multiplicat","Timeable"]};
