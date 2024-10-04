@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["enums","errors","mat_utils","transcript","utils","vec_utils"]};

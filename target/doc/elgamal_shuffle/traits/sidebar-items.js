@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["mat_traits","traits","vec_traits"]};
